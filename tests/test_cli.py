@@ -212,9 +212,7 @@ class TestMainFunction:
         assert result == 0
 
     def test_main_invalid_context_json(self, capsys):
-        with mock.patch.object(
-            sys, "argv", ["peircean", "--context", "invalid json", "Test"]
-        ):
+        with mock.patch.object(sys, "argv", ["peircean", "--context", "invalid json", "Test"]):
             result = main()
         assert result == 1
         captured = capsys.readouterr()
@@ -243,15 +241,11 @@ class TestMainFunction:
         assert result == 0
 
     def test_main_council_flag(self, capsys):
-        with mock.patch.object(
-            sys, "argv", ["peircean", "--council", "Test"]
-        ):
+        with mock.patch.object(sys, "argv", ["peircean", "--council", "Test"]):
             result = main()
         assert result == 0
 
     def test_main_verbose_flag(self, capsys):
-        with mock.patch.object(
-            sys, "argv", ["peircean", "-v", "--prompt", "Test"]
-        ):
+        with mock.patch.object(sys, "argv", ["peircean", "-v", "--prompt", "Test"]):
             result = main()
         assert result == 0
