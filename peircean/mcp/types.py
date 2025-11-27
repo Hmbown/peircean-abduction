@@ -1,8 +1,5 @@
-from pydantic import BaseModel
+"""MCP types re-exported from the official mcp library."""
 
+from mcp.types import ToolAnnotations
 
-class ToolAnnotations(BaseModel):
-    """Annotations for MCP tools."""
-
-    readOnlyHint: bool = False
-    idempotentHint: bool = False
+__all__ = ["ToolAnnotations"]

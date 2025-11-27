@@ -323,7 +323,29 @@ are suddenly 3x slower despite no code changes"
 trading volume spiked 500% with no news"
 ```
 
-### Step-by-Step Workflow
+### Automatic Workflow (Recommended)
+
+The MCP server instructs LLMs to automatically continue through all 3 phases when you start an analysis. Just describe your anomaly and the LLM will:
+
+1. Call `peircean_observe_anomaly` → Execute prompt → Get anomaly JSON
+2. Automatically call `peircean_generate_hypotheses` → Execute prompt → Get hypotheses JSON
+3. Automatically call `peircean_evaluate_via_ibe` → Execute prompt → Present final results
+
+**No manual intervention needed** - the analysis runs to completion.
+
+### Quick Analysis (Single-Shot)
+
+For faster analysis without intermediate results:
+
+```
+"Quick Peircean analysis: our API latency jumped 10x overnight but all metrics are normal"
+```
+
+This uses `peircean_abduce_single_shot` which combines all 3 phases into one prompt.
+
+### Manual Step-by-Step Workflow
+
+If you want explicit control over each phase:
 
 1. Call `peircean_observe_anomaly` with your observation
 2. Execute returned prompt -> get `anomaly` JSON

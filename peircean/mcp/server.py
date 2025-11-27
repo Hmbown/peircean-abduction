@@ -37,9 +37,45 @@ logger = logging.getLogger("peircean")
 # =============================================================================
 # MCP SERVER INITIALIZATION
 # =============================================================================
+MCP_INSTRUCTIONS = """A Logic Harness for abductive inference. Anomaly in → Hypothesis out.
+
+## AUTOMATIC WORKFLOW
+
+When a user asks you to analyze an anomaly or surprising observation using Peircean abduction:
+
+1. **For quick analysis**: Use `peircean_abduce_single_shot` - it runs all 3 phases in one prompt.
+
+2. **For detailed analysis**: Automatically run through all 3 phases in sequence:
+   - Call `peircean_observe_anomaly` → Execute the returned prompt → Save anomaly JSON
+   - Call `peircean_generate_hypotheses` with anomaly JSON → Execute prompt → Save hypotheses JSON
+   - Call `peircean_evaluate_via_ibe` with both JSONs → Execute prompt → Present final results
+
+   **IMPORTANT**: Do NOT stop after Phase 1. Continue automatically through all phases unless the user explicitly asks for step-by-step control.
+
+## TOOLS
+
+| Tool | Phase | Purpose |
+|------|-------|---------|
+| `peircean_observe_anomaly` | 1 | Register the surprising fact |
+| `peircean_generate_hypotheses` | 2 | Generate candidate explanations |
+| `peircean_evaluate_via_ibe` | 3 | Select best explanation via IBE |
+| `peircean_abduce_single_shot` | All | Complete analysis in one step |
+| `peircean_critic_evaluate` | Aux | Get specific critic perspective |
+
+## DOMAINS
+
+Use the `domain` parameter to get domain-specific hypothesis types:
+- `technical`: Race conditions, resource exhaustion, network issues
+- `financial`: Market microstructure, information asymmetry
+- `legal`: Statutory interpretation, precedent conflicts
+- `medical`: Differential diagnosis, drug interactions
+- `scientific`: Measurement error, confounding variables
+- `general`: Causal, systemic, human factors
+"""
+
 mcp = FastMCP(
     name="peircean",
-    instructions="A Logic Harness for abductive inference. Anomaly in → Hypothesis out.",
+    instructions=MCP_INSTRUCTIONS,
 )
 
 

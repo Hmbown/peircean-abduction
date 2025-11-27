@@ -247,7 +247,11 @@ Use command `python` and args `["-m", "peircean.mcp.server"]`.
 - [User Guide](docs/guides/user-guide.md)
 - [MCP Integration](docs/guides/mcp-integration.md)
 - [Abductive Reasoning Concepts](docs/concepts/abductive-reasoning.md)
-- [Example: Kubernetes Anomaly](docs/examples/kubernetes-anomaly.md)
+
+### Examples
+
+- [Kubernetes Anomaly](docs/examples/kubernetes-anomaly.md) - CPU/latency inverse correlation
+- [API Latency Anomaly](docs/examples/api-latency-anomaly.md) - 10x latency spike with normal metrics
 
 ## Contributing
 
