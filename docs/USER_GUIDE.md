@@ -226,6 +226,33 @@ result = await agent.abduce(observation)
 print(result.council_evaluation)
 ```
 
+### Custom Councils (v0.2.0+)
+
+For domain-specific anomalies, you can nominate a custom council of specialists. The anomaly itself can "recommend" appropriate judges based on its domain.
+
+**Example: International Space Law**
+
+```python
+# Phase 1 may return a recommended_council based on domain
+anomaly = observe_anomaly(
+    observation="A 'defunct' satellite fired thrusters before collision",
+    domain="legal"
+)
+# Returns: recommended_council: ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
+
+# Phase 3: Use custom council
+evaluation = evaluate_via_ibe(
+    anomaly_json=anomaly,
+    hypotheses_json=hypotheses,
+    custom_council=["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
+)
+```
+
+**When to use custom councils:**
+- High-stakes decisions requiring domain expertise
+- Interdisciplinary anomalies (legal + technical + strategic)
+- When the default 5 critics don't capture the relevant perspectives
+
 ---
 
 ## Domain Configuration

@@ -251,8 +251,23 @@ evaluate_via_ibe(
 - `anomaly_json` (required): JSON from Phase 1
 - `hypotheses_json` (required): JSON from Phase 2
 - `use_council` (optional): Include Council of Critics (default: false)
+- `custom_council` (optional): List of custom specialist names (v0.2.0+)
 
 **Output:** JSON with `evaluation` containing `best_hypothesis`, `scores`, `ranking`, `verdict`, `next_steps`.
+
+#### Custom Council Example (v0.2.0+)
+
+For domain-specific anomalies, nominate specialists instead of the default 5 critics:
+
+```
+evaluate_via_ibe(
+  anomaly_json: '{"anomaly": {...}}',
+  hypotheses_json: '{"hypotheses": [...]}',
+  custom_council: ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
+)
+```
+
+The `recommended_council` field from Phase 1's output can guide your choice of specialists.
 
 ---
 
