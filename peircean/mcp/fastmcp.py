@@ -7,16 +7,21 @@ class FastMCP:
     """
     A minimal implementation of FastMCP for local usage.
     """
+
     def __init__(self, name: str, instructions: str = ""):
         self.name = name
         self.instructions = instructions
         self._tools: dict[str, Callable] = {}
+        # Mock _tool_manager for tests that inspect it directly
+        self._tool_manager = self
 
     def tool(self, annotations: ToolAnnotations | None = None) -> Callable:
         """Decorator to register a tool."""
+
         def decorator(func: Callable) -> Callable:
             self._tools[func.__name__] = func
             return func
+
         return decorator
 
     def run(self) -> None:
