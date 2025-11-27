@@ -15,11 +15,11 @@ following Peirce's three-stage scientific inquiry:
 
 Example:
     from peircean import AbductionAgent, abduction_prompt
-    
+
     # Using with your own LLM
     prompt = abduction_prompt("Stock dropped 5% on good news")
     response = your_llm(prompt)
-    
+
     # Using the agent
     agent = AbductionAgent(
         llm_call=your_llm_function,
@@ -29,16 +29,13 @@ Example:
     print(result.selected_hypothesis)
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Hunter Bown"
 __email__ = "hunter@shannonlabs.dev"
 
 from .core import (
     # Agent
     AbductionAgent,
-    abduction_prompt,
-    observation_prompt,
-    hypothesis_prompt,
     # Models
     AbductionResult,
     Assumption,
@@ -53,6 +50,9 @@ from .core import (
     SelectionCriterion,
     SurpriseLevel,
     TestablePrediction,
+    abduction_prompt,
+    hypothesis_prompt,
+    observation_prompt,
 )
 
 __all__ = [
