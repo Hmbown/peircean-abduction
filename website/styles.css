@@ -1,16 +1,26 @@
 /* ============================================
    PEIRCEAN - A Logic Harness for Abductive Inference
-   Aesthetic inspired by Hegelion
+   Aesthetic: Dark Academia Noir
    ============================================ */
 
 /* CSS Variables */
 :root {
-    --bg-primary: #f5f5f0;
-    --bg-secondary: #e8e8e3;
-    --text-primary: #1a1a1a;
-    --text-secondary: #666666;
-    --accent: #1a1a1a;
-    --border: #1a1a1a;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111111;
+    --bg-tertiary: #1a1a1a;
+    
+    --text-primary: #e0e0e0;
+    --text-secondary: #888888;
+    --text-muted: #444444;
+    
+    --accent: #d4af37; /* Antique Gold - Truth */
+    --accent-glow: rgba(212, 175, 55, 0.1);
+    
+    --signal: #ff3333; /* Signal Red - Anomaly */
+    --signal-glow: rgba(255, 51, 51, 0.15);
+    
+    --border: #333333;
+    --border-light: #444444;
 
     --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
@@ -44,20 +54,23 @@ body {
 }
 
 /* Typography */
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-family: var(--font-serif);
     font-weight: 400;
     line-height: 1.1;
+    color: var(--text-primary);
 }
 
 a {
     color: var(--text-primary);
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
 }
 
 a:hover {
-    opacity: 0.7;
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
 /* ============================================
@@ -74,14 +87,17 @@ a:hover {
     left: 0;
     right: 0;
     z-index: 100;
-    background-color: var(--bg-primary);
+    background-color: rgba(10, 10, 10, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
 }
 
 .header-logo {
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
+    color: var(--text-primary);
 }
 
 .header-nav {
@@ -91,7 +107,13 @@ a:hover {
 
 .header-nav a {
     font-size: 12px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+}
+
+.header-nav a:hover {
+    color: var(--accent);
+    border-bottom: none;
 }
 
 /* ============================================
@@ -104,7 +126,9 @@ a:hover {
     align-items: center;
     padding: var(--space-xl) var(--space-lg);
     padding-top: calc(var(--space-xl) + 60px);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
+    background-image: 
+        radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, transparent 70%);
 }
 
 .hero-content {
@@ -125,10 +149,12 @@ a:hover {
 .version-badge {
     display: inline-block;
     font-size: 11px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
     padding: var(--space-xs) var(--space-sm);
     border: 1px solid var(--border);
+    color: var(--accent);
     margin-bottom: var(--space-md);
+    background-color: var(--accent-glow);
 }
 
 .hero-title {
@@ -137,15 +163,17 @@ a:hover {
     font-style: italic;
     margin-bottom: var(--space-md);
     letter-spacing: -0.02em;
+    color: var(--text-primary);
+    text-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
 .hero-tagline {
     font-size: 16px;
     line-height: 1.8;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     margin-bottom: var(--space-lg);
     padding-left: var(--space-md);
-    border-left: 2px solid var(--border);
+    border-left: 1px solid var(--accent);
 }
 
 .hero-buttons {
@@ -164,33 +192,30 @@ a:hover {
     border: 1px solid var(--border);
     transition: all 0.2s ease;
     cursor: pointer;
-}
-
-.btn-primary {
-    background-color: var(--accent);
-    color: var(--bg-primary);
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background-color: transparent;
+    background: transparent;
     color: var(--text-primary);
 }
 
+.btn-primary {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-glow);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
 .btn-secondary:hover {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    border-color: var(--text-primary);
+    background-color: var(--bg-secondary);
 }
 
 .hero-divider {
     width: 1px;
     height: 400px;
-    border-left: 1px dashed var(--border);
-    opacity: 0.5;
+    border-left: 1px solid var(--border);
+    opacity: 0.3;
 }
 
 .hero-right {
@@ -202,12 +227,8 @@ a:hover {
 
 .hero-graphic {
     width: 100%;
-    max-width: 350px;
-}
-
-.abduction-logo {
-    width: 100%;
-    height: auto;
+    max-width: 400px;
+    opacity: 0.9;
 }
 
 /* ============================================
@@ -217,6 +238,7 @@ a:hover {
 .process {
     padding: var(--space-xl) var(--space-lg);
     border-top: 1px solid var(--border);
+    background-color: var(--bg-secondary);
 }
 
 .section-header {
@@ -227,14 +249,15 @@ a:hover {
 .section-label {
     display: block;
     font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--text-secondary);
+    letter-spacing: 0.2em;
+    color: var(--accent);
     margin-bottom: var(--space-xs);
 }
 
 .section-title {
     font-size: clamp(2rem, 5vw, 3rem);
     font-style: italic;
+    color: var(--text-primary);
 }
 
 .process-steps {
@@ -252,36 +275,33 @@ a:hover {
 }
 
 .step-box {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border);
     margin-bottom: var(--space-sm);
     transition: all 0.3s ease;
+    background-color: var(--bg-primary);
 }
 
 .step-box:hover {
-    transform: scale(1.05);
-}
-
-.step-box-outline {
-    background-color: transparent;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+    transform: translateY(-5px);
 }
 
 .step-box-filled {
-    background-color: var(--accent);
-}
-
-.step-box-filled .step-label {
-    color: var(--bg-primary);
+    border-color: var(--accent);
+    background-color: var(--accent-glow);
 }
 
 .step-label {
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.1em;
+    color: var(--text-primary);
 }
 
 .step-description {
@@ -289,11 +309,12 @@ a:hover {
     color: var(--text-secondary);
     font-style: italic;
     max-width: 150px;
+    margin: 0 auto;
 }
 
 .process-arrow {
     font-size: 24px;
-    color: var(--text-secondary);
+    color: var(--border);
 }
 
 /* ============================================
@@ -302,24 +323,28 @@ a:hover {
 
 .quote-section {
     padding: var(--space-xl) var(--space-lg);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
     text-align: center;
+    border-top: 1px solid var(--border);
 }
 
 .peirce-quote {
     font-family: var(--font-serif);
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-size: clamp(1.5rem, 3vw, 2rem);
     font-style: italic;
-    line-height: 1.8;
-    max-width: 800px;
+    line-height: 1.6;
+    max-width: 900px;
     margin: 0 auto var(--space-md);
+    color: var(--text-primary);
 }
 
 .quote-cite {
     font-family: var(--font-mono);
     font-size: 12px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     color: var(--text-secondary);
+    display: block;
+    margin-top: var(--space-md);
 }
 
 /* ============================================
@@ -329,6 +354,7 @@ a:hover {
 .tools {
     padding: var(--space-xl) var(--space-lg);
     border-top: 1px solid var(--border);
+    background-color: var(--bg-secondary);
 }
 
 .tools-grid {
@@ -342,41 +368,44 @@ a:hover {
 .tool-card {
     padding: var(--space-md);
     border: 1px solid var(--border);
+    background-color: var(--bg-primary);
     transition: all 0.3s ease;
 }
 
 .tool-card:hover {
-    background-color: var(--bg-secondary);
+    border-color: var(--text-secondary);
     transform: translateY(-2px);
 }
 
 .tool-phase {
     font-size: 10px;
-    letter-spacing: 0.15em;
-    color: var(--text-secondary);
-    margin-bottom: var(--space-xs);
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: var(--space-sm);
 }
 
 .tool-name {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     margin-bottom: var(--space-sm);
+    color: var(--text-primary);
 }
 
 .tool-desc {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.7;
     color: var(--text-secondary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
 .tool-output {
     font-size: 12px;
-    color: var(--text-primary);
+    color: var(--text-muted);
     background-color: var(--bg-secondary);
     padding: var(--space-xs) var(--space-sm);
     display: inline-block;
+    border: 1px solid var(--border);
 }
 
 /* ============================================
@@ -385,14 +414,15 @@ a:hover {
 
 .council {
     padding: var(--space-xl) var(--space-lg);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border);
 }
 
 .critics-grid {
     display: flex;
     justify-content: center;
     gap: var(--space-md);
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     flex-wrap: wrap;
 }
@@ -400,7 +430,14 @@ a:hover {
 .critic-card {
     text-align: center;
     padding: var(--space-md);
-    min-width: 140px;
+    min-width: 160px;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.critic-card:hover {
+    border-color: var(--border);
+    background-color: var(--bg-secondary);
 }
 
 .critic-icon {
@@ -415,25 +452,92 @@ a:hover {
     font-family: var(--font-serif);
     font-size: 24px;
     font-style: italic;
+    color: var(--text-secondary);
     transition: all 0.3s ease;
 }
 
 .critic-card:hover .critic-icon {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
 }
 
 .critic-name {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     margin-bottom: var(--space-xs);
+    color: var(--text-primary);
 }
 
 .critic-focus {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-style: italic;
+}
+
+/* ============================================
+   CASE STUDY SECTION
+   ============================================ */
+
+.case-study {
+    padding: var(--space-xl) var(--space-lg);
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+}
+
+.case-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.case-card {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    background-color: var(--bg-primary);
+}
+
+.case-card.peircean {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+
+.case-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+    display: block;
+}
+
+.peircean .case-label {
+    color: var(--accent);
+}
+
+.case-quote {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-md);
+    border-left: 1px solid var(--border);
+}
+
+.peircean .case-quote {
+    border-left-color: var(--accent);
+}
+
+.case-result {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.case-result strong {
+    color: var(--text-primary);
 }
 
 /* ============================================
@@ -443,6 +547,7 @@ a:hover {
 .quickstart {
     padding: var(--space-xl) var(--space-lg);
     border-top: 1px solid var(--border);
+    background-color: var(--bg-primary);
 }
 
 .quickstart-content {
@@ -458,9 +563,11 @@ a:hover {
 }
 
 .step-number {
+    font-family: var(--font-mono);
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--accent);
     min-width: 30px;
+    padding-top: 4px;
 }
 
 .step-content {
@@ -472,11 +579,13 @@ a:hover {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: var(--space-sm);
+    color: var(--text-primary);
 }
 
 .step-content pre {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     padding: var(--space-md);
     overflow-x: auto;
     font-size: 13px;
@@ -494,6 +603,7 @@ a:hover {
 .docs {
     padding: var(--space-xl) var(--space-lg);
     background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border);
 }
 
 .docs-grid {
@@ -515,16 +625,26 @@ a:hover {
 }
 
 .doc-link:hover {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    border-color: var(--accent);
+    background-color: var(--bg-primary);
+    transform: translateX(5px);
+}
+
+.doc-link:hover .doc-title,
+.doc-link:hover .doc-arrow {
+    color: var(--accent);
 }
 
 .doc-title {
     font-size: 14px;
+    color: var(--text-primary);
+    transition: color 0.2s ease;
 }
 
 .doc-arrow {
     font-size: 18px;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
 }
 
 /* ============================================
@@ -534,6 +654,7 @@ a:hover {
 .footer {
     padding: var(--space-xl) var(--space-lg) var(--space-lg);
     border-top: 1px solid var(--border);
+    background-color: var(--bg-primary);
 }
 
 .footer-content {
@@ -549,9 +670,10 @@ a:hover {
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
     display: block;
     margin-bottom: var(--space-xs);
+    color: var(--text-primary);
 }
 
 .footer-tagline {
@@ -565,17 +687,22 @@ a:hover {
 
 .footer-credit {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     margin-bottom: var(--space-sm);
 }
 
 .footer-credit a {
-    text-decoration: underline;
+    text-decoration: none;
+    color: var(--text-secondary);
+}
+
+.footer-credit a:hover {
+    color: var(--accent);
 }
 
 .footer-quote {
     font-family: var(--font-serif);
-    font-size: 13px;
+    font-size: 14px;
     font-style: italic;
     color: var(--text-secondary);
     max-width: 400px;
@@ -587,11 +714,19 @@ a:hover {
     align-items: center;
     gap: var(--space-sm);
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     padding-top: var(--space-md);
     border-top: 1px solid var(--border);
     max-width: 1200px;
     margin: 0 auto;
+}
+
+.footer-bottom a {
+    color: var(--text-muted);
+}
+
+.footer-bottom a:hover {
+    color: var(--accent);
 }
 
 /* ============================================
@@ -611,7 +746,7 @@ a:hover {
     .hero-tagline {
         border-left: none;
         padding-left: 0;
-        border-top: 2px solid var(--border);
+        border-top: 1px solid var(--accent);
         padding-top: var(--space-md);
     }
 
@@ -623,7 +758,11 @@ a:hover {
         width: 100px;
         height: 1px;
         border-left: none;
-        border-top: 1px dashed var(--border);
+        border-top: 1px solid var(--border);
+    }
+
+    .case-grid {
+        grid-template-columns: 1fr;
     }
 
     .footer-content {
@@ -665,6 +804,94 @@ a:hover {
 }
 
 /* ============================================
+   FULL TRACE SECTION
+   ============================================ */
+
+.full-trace {
+    padding: var(--space-xl) var(--space-lg);
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+}
+
+.trace-intro {
+    max-width: 800px;
+    margin: 0 auto var(--space-lg);
+    text-align: center;
+}
+
+.trace-scenario {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+.trace-scenario strong {
+    color: var(--accent);
+}
+
+.trace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-md);
+    max-width: 1200px;
+    margin: 0 auto var(--space-lg);
+}
+
+.trace-card {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    background-color: var(--bg-primary);
+    transition: all 0.3s ease;
+}
+
+.trace-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.trace-phase {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: var(--space-sm);
+}
+
+.trace-card pre {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    padding: var(--space-md);
+    overflow-x: auto;
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.trace-card code {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+.trace-insight {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-md);
+    border-left: 2px solid var(--accent);
+    font-size: 14px;
+    color: var(--text-secondary);
+    background-color: var(--accent-glow);
+}
+
+.trace-insight strong {
+    color: var(--accent);
+}
+
+.trace-insight em {
+    color: var(--text-primary);
+}
+
+/* ============================================
    ANIMATIONS
    ============================================ */
 
@@ -684,6 +911,8 @@ a:hover {
 .section-header,
 .process-steps,
 .tools-grid,
-.critics-grid {
+.critics-grid,
+.case-grid,
+.trace-grid {
     animation: fadeIn 0.8s ease-out;
 }
