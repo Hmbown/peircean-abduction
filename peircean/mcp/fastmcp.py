@@ -19,6 +19,8 @@ class FastMCP:
         """Decorator to register a tool."""
 
         def decorator(func: Callable) -> Callable:
+            if annotations:
+                func.annotations = annotations
             self._tools[func.__name__] = func
             return func
 
