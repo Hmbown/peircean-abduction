@@ -20,7 +20,7 @@ class FastMCP:
 
         def decorator(func: Callable) -> Callable:
             if annotations:
-                setattr(func, "annotations", annotations)
+                func.annotations = annotations  # type: ignore
             self._tools[func.__name__] = func
             return func
 

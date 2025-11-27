@@ -15,9 +15,9 @@ import json
 import os
 import shutil
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from collections.abc import Callable
 
 
 def get_default_config_path() -> Path:

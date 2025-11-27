@@ -5,7 +5,7 @@ Tests for Peircean MCP Setup Utility.
 import json
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from peircean.mcp.setup import (
     get_default_config_path,
