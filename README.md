@@ -1,5 +1,9 @@
 # Peircean
 
+[![CI](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A **Logic Harness** for abductive inference. Forces LLMs to make uncertainty visible through explicit hypothesis generation and Inference to Best Explanation.
 
 > **Anomaly in → Hypothesis out.**
@@ -338,6 +342,30 @@ abduce_single_shot(
 | `technical` | Race conditions, resource exhaustion, cascading failures |
 | `scientific` | Measurement error, confounding variables, replication issues |
 
+## ⚡ Case Study: The "Lumping" Problem
+
+Why do we need structured abduction? Because standard LLMs tend to "lump" distinct possibilities into a single safe conclusion.
+
+**The Test:**
+We fed a scenario to a standard LLM and the Peircean Harness:
+* *Scenario:* A "dead" satellite suddenly fired thrusters and hit a station.
+* *Key Detail:* The satellite steered *into* the collision path.
+
+**The Standard LLM Output (Induction):**
+> "The most likely explanation is that Country A was covertly maintaining an active military satellite... and a specific maneuver (**whether automated failure or intentional command**) directly caused the collision."
+
+* **Result:** It correctly identified the lie ("It's not debris"), but it **lumped** the two most important possibilities (Glitch vs. Attack) into a parenthetical. It stopped at "Liability."
+
+**The Peircean Output (Abduction):**
+> **Hypothesis 1 (Intent):** "The precise vector ('into' the collision) implies a targeted strike." (Explains the vector).
+> **Hypothesis 3 (Glitch):** "An automated fail-safe triggered erroneously." (Explains the burn, fails to explain the vector).
+> **Verdict:** "Investigate H1. Check RF spectrum logs for uplink signals at T-10s."
+
+* **Result:** It **split** the possibilities based on the specific evidence (the vector). It didn't just find "Liability"; it identified **Culpability**.
+
+**The Takeaway:**
+Standard LLMs act like a Jury (deciding true/false). Peircean Abduction acts like a Detective (investigating *which* version of the truth is most likely).
+
 ## Why Abduction?
 
 | Inference | Direction | Function | Creates New Ideas? |
@@ -381,20 +409,28 @@ LLM Provider (Claude, GPT, etc.)
 Structured JSON with selected hypothesis + next steps
 ```
 
-## Example: Full Trace
+## Example: Full Trace (International Space Law)
 
-**Query**: "Our Kubernetes cluster CPU usage dropped 40% but response latency increased 200%."
+**Query**: "A 'defunct' military satellite (Country A) collided with a commercial station (Country B). Country A claimed it was uncontrollable debris, but recovered flight logs show a 2-second thruster burn 10 seconds before impact—steering *into* the collision path."
 
 ### Phase 1: Observation
 ```json
 {
     "anomaly": {
-        "fact": "CPU dropped 40%, latency increased 200%",
+        "fact": "Defunct 'debris' satellite executed a controlled burn 10s before collision, steering into the target.",
         "surprise_level": "anomalous",
-        "surprise_score": 0.92,
-        "expected_baseline": "Positive correlation between load and latency",
-        "surprise_source": "Negative correlation observed (inverse of expected)"
-    }
+        "surprise_score": 0.95,
+        "expected_baseline": "Space debris follows ballistic trajectories and does not execute maneuvers.",
+        "domain": "Legal / International Space Law",
+        "key_features": [
+            "Active thruster burn from 'defunct' satellite",
+            "Timing: 10 seconds before impact",
+            "Vector: Steered into collision path",
+            "Contradiction: Legal classification vs. Physical behavior"
+        ],
+        "surprise_source": "Violates the definition of space debris and the expectation of rational actor behavior."
+    },
+    "recommended_council": ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
 }
 ```
 
@@ -404,46 +440,60 @@ Structured JSON with selected hypothesis + next steps
     "hypotheses": [
         {
             "id": "H1",
-            "statement": "HPA removed pods due to low CPU, causing overload",
-            "prior_probability": 0.30,
-            "testable_predictions": ["Check HPA events, pod count history"]
+            "statement": "The satellite was never defunct; it was a dormant 'sleeper' weapon activated for a kinetic strike.",
+            "explains_anomaly": "Explains thruster capability, precise timing, and intentional steering into target.",
+            "prior_probability": 0.20,
+            "testable_predictions": [
+                {"prediction": "Encrypted uplink signal detected shortly before burn", "test_method": "Review RF spectrum logs"}
+            ]
         },
         {
             "id": "H2",
-            "statement": "Database connection pool exhaustion",
-            "prior_probability": 0.25,
-            "testable_predictions": ["Check DB connection metrics"]
+            "statement": "A cyber-intrusion by a third party hijacked the satellite's command link.",
+            "explains_anomaly": "Explains why Country A claimed debris (they lost control) but it still maneuvered.",
+            "prior_probability": 0.30,
+            "testable_predictions": [
+                {"prediction": "Command logs show unauthorized IP or anomalous signal origin", "test_method": "Forensic analysis of ground control"}
+            ]
         },
         {
             "id": "H3",
-            "statement": "Network partition to dependent service",
-            "prior_probability": 0.20,
-            "testable_predictions": ["Check network errors, service health"]
+            "statement": "An automated 'end-of-life' deorbit script triggered erroneously due to sensor malfunction.",
+            "explains_anomaly": "Explains the burn without malicious intent; collision was accidental.",
+            "prior_probability": 0.40,
+            "testable_predictions": [
+                {"prediction": "Code review reveals 'dead man switch' logic", "test_method": "Audit satellite firmware"}
+            ]
         }
     ]
 }
 ```
 
-### Phase 3: IBE Selection
+### Phase 3: IBE Selection (with Custom Council)
 ```json
 {
+    "council": ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"],
     "evaluation": {
         "best_hypothesis": "H1",
         "scores": {
-            "H1": {"explanatory_power": 0.95, "testability": 0.95, "composite": 0.89},
-            "H2": {"explanatory_power": 0.80, "testability": 0.90, "composite": 0.82},
-            "H3": {"explanatory_power": 0.70, "testability": 0.80, "composite": 0.72}
+            "H1": {"explanatory_power": 0.90, "parsimony": 0.60, "testability": 0.85, "composite": 0.83},
+            "H2": {"explanatory_power": 0.75, "parsimony": 0.70, "testability": 0.70, "composite": 0.72},
+            "H3": {"explanatory_power": 0.50, "parsimony": 0.85, "testability": 0.80, "composite": 0.68}
         },
+        "ranking": ["H1", "H2", "H3"],
         "verdict": "investigate",
-        "confidence": 0.85,
+        "confidence": 0.78,
+        "rationale": "H1 uniquely explains the vector (steering INTO collision). H3 explains the burn but not the direction.",
         "next_steps": [
-            "kubectl get hpa -w (check scaling events)",
-            "kubectl get pods --watch (monitor pod count)",
-            "Review HPA min/max replica configuration"
+            "Review RF spectrum logs for uplink signals at T-10s",
+            "Check satellite command encryption status",
+            "Examine trajectory simulation to confirm vector was intentional"
         ]
     }
 }
 ```
+
+**Key Insight**: H3 (automated glitch) has the highest prior probability (0.40), but H1 (intentional strike) scores highest on explanatory power because only intent explains why the satellite steered *into* the collision path rather than away.
 
 ## Documentation
 
