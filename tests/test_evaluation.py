@@ -172,9 +172,7 @@ class TestQuestion5JSONSchemaCompliance:
         outputs = [
             peircean_observe_anomaly(observation="Test"),
             peircean_generate_hypotheses(anomaly_json=anomaly_json),
-            peircean_evaluate_via_ibe(
-                anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
-            ),
+            peircean_evaluate_via_ibe(anomaly_json=anomaly_json, hypotheses_json=hypotheses_json),
             peircean_abduce_single_shot(observation="Test"),
             peircean_critic_evaluate(
                 critic="skeptic", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
@@ -202,9 +200,7 @@ class TestQuestion6DomainSpecificGuidance:
 
     def test_unknown_domain_falls_back_to_general(self):
         """Unknown domains should fall back to general."""
-        result = json.loads(
-            peircean_observe_anomaly(observation="Test", domain="unknown_domain")
-        )
+        result = json.loads(peircean_observe_anomaly(observation="Test", domain="unknown_domain"))
         # Should still return a valid prompt
         assert result["type"] == "prompt"
         # Domain appears in prompt even if invalid
@@ -320,9 +316,7 @@ class TestQuestion9InvalidJSONHandling:
     def test_critic_evaluate_invalid_json(self):
         """Invalid JSON in critic_evaluate should return helpful error."""
         result = json.loads(
-            peircean_critic_evaluate(
-                critic="skeptic", anomaly_json="invalid", hypotheses_json="{}"
-            )
+            peircean_critic_evaluate(critic="skeptic", anomaly_json="invalid", hypotheses_json="{}")
         )
         assert result["type"] == "error"
 
