@@ -1,5 +1,7 @@
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+
 from .types import ToolAnnotations
+
 
 class FastMCP:
     """
@@ -10,7 +12,7 @@ class FastMCP:
         self.instructions = instructions
         self._tools: dict[str, Callable] = {}
 
-    def tool(self, annotations: Optional[ToolAnnotations] = None) -> Callable:
+    def tool(self, annotations: ToolAnnotations | None = None) -> Callable:
         """Decorator to register a tool."""
         def decorator(func: Callable) -> Callable:
             self._tools[func.__name__] = func
