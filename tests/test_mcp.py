@@ -3,25 +3,21 @@ Tests for Peircean MCP Server.
 """
 
 import json
-import pytest
-from unittest.mock import MagicMock, patch
 
 from peircean.mcp.server import (
-    observe_anomaly,
-    generate_hypotheses,
-    evaluate_via_ibe,
     abduce_single_shot,
-    critic_evaluate
+    critic_evaluate,
+    evaluate_via_ibe,
+    generate_hypotheses,
+    observe_anomaly,
 )
+
 
 class TestMCPServer:
     """Test MCP server tools."""
 
     def test_observe_anomaly_returns_prompt(self):
-        result_json = observe_anomaly(
-            observation="Test observation",
-            domain="technical"
-        )
+        result_json = observe_anomaly(observation="Test observation", domain="technical")
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -31,10 +27,7 @@ class TestMCPServer:
         assert "Technical-specific" in result["prompt"] or "technical" in result["prompt"].lower()
 
     def test_observe_anomaly_invalid_domain_defaults_to_general(self):
-        result_json = observe_anomaly(
-            observation="Test observation",
-            domain="invalid_domain"
-        )
+        result_json = observe_anomaly(observation="Test observation", domain="invalid_domain")
         result = json.loads(result_json)
 
         # When domain is invalid, it prints "invalid_domain" in the prompt
@@ -42,18 +35,17 @@ class TestMCPServer:
         assert "invalid_domain" in result["prompt"]
 
     def test_generate_hypotheses_returns_prompt(self):
-        anomaly_json = json.dumps({
-            "anomaly": {
-                "fact": "Test observation",
-                "surprise_level": "high",
-                "domain": "technical"
+        anomaly_json = json.dumps(
+            {
+                "anomaly": {
+                    "fact": "Test observation",
+                    "surprise_level": "high",
+                    "domain": "technical",
+                }
             }
-        })
-
-        result_json = generate_hypotheses(
-            anomaly_json=anomaly_json,
-            num_hypotheses=3
         )
+
+        result_json = generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -63,29 +55,16 @@ class TestMCPServer:
         assert "Generate 3" in result["prompt"]
 
     def test_generate_hypotheses_invalid_json_returns_error(self):
-        result_json = generate_hypotheses(
-            anomaly_json="invalid json"
-        )
+        result_json = generate_hypotheses(anomaly_json="invalid json")
         result = json.loads(result_json)
 
         assert "error" in result
 
     def test_evaluate_via_ibe_returns_prompt(self):
-        anomaly_json = json.dumps({
-            "anomaly": {
-                "fact": "Test observation"
-            }
-        })
-        hypotheses_json = json.dumps({
-            "hypotheses": [
-                {"id": "H1", "statement": "Test H1"}
-            ]
-        })
+        anomaly_json = json.dumps({"anomaly": {"fact": "Test observation"}})
+        hypotheses_json = json.dumps({"hypotheses": [{"id": "H1", "statement": "Test H1"}]})
 
-        result_json = evaluate_via_ibe(
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json
-        )
+        result_json = evaluate_via_ibe(anomaly_json=anomaly_json, hypotheses_json=hypotheses_json)
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -98,19 +77,14 @@ class TestMCPServer:
         hypotheses_json = json.dumps({"hypotheses": []})
 
         result_json = evaluate_via_ibe(
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json,
-            use_council=True
+            anomaly_json=anomaly_json, hypotheses_json=hypotheses_json, use_council=True
         )
         result = json.loads(result_json)
 
         assert "Council of Critics" in result["prompt"]
 
     def test_abduce_single_shot_returns_prompt(self):
-        result_json = abduce_single_shot(
-            observation="Test observation",
-            domain="financial"
-        )
+        result_json = abduce_single_shot(observation="Test observation", domain="financial")
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -123,9 +97,7 @@ class TestMCPServer:
         hypotheses_json = json.dumps({"hypotheses": [{"id": "H1", "statement": "H1"}]})
 
         result_json = critic_evaluate(
-            critic="skeptic",
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json
+            critic="skeptic", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
         )
         result = json.loads(result_json)
 
@@ -135,11 +107,7 @@ class TestMCPServer:
         assert "THE SKEPTIC" in result["prompt"]
 
     def test_critic_evaluate_invalid_critic(self):
-        result_json = critic_evaluate(
-            critic="jester",
-            anomaly_json="{}",
-            hypotheses_json="{}"
-        )
+        result_json = critic_evaluate(critic="jester", anomaly_json="{}", hypotheses_json="{}")
         result = json.loads(result_json)
 
         # The implementation allows any critic role, so this should NOT return an error

@@ -5,7 +5,7 @@ Structured prompts that guide LLMs through Peirce's abductive reasoning process.
 Each phase corresponds to a stage in the scientific method as Peirce conceived it:
 
 1. Observation - Identify and articulate the surprising fact
-2. Hypothesis Generation (Retroduction) - Generate explanatory hypotheses  
+2. Hypothesis Generation (Retroduction) - Generate explanatory hypotheses
 3. Selection (IBE) - Infer the best explanation
 
 "Any inquiry is for Peirce bound to follow this pattern: abduction–deduction–induction."
@@ -13,10 +13,9 @@ Each phase corresponds to a stage in the scientific method as Peirce conceived i
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from .models import Domain, Hypothesis, Observation
-
 
 # =============================================================================
 # PHASE 1: OBSERVATION PROMPTS
@@ -360,7 +359,6 @@ Provide your empirical evaluation:
 }}
 ```
 """,
-
     "logician": """You are THE LOGICIAN on the Council of Critics.
 
 Your role: Evaluate hypotheses based on LOGICAL CONSISTENCY.
@@ -395,7 +393,6 @@ Provide your logical evaluation:
 }}
 ```
 """,
-
     "pragmatist": """You are THE PRAGMATIST on the Council of Critics.
 
 Your role: Evaluate hypotheses based on PRACTICAL CONSEQUENCES.
@@ -431,7 +428,6 @@ Provide your pragmatic evaluation:
 }}
 ```
 """,
-
     "economist": """You are THE ECONOMIST OF RESEARCH on the Council of Critics.
 
 Your role: Evaluate hypotheses based on ECONOMY OF INQUIRY.
@@ -468,7 +464,6 @@ Provide your economic evaluation:
 }}
 ```
 """,
-
     "skeptic": """You are THE SKEPTIC on the Council of Critics.
 
 Your role: Challenge hypotheses and identify potential flaws.
@@ -625,39 +620,29 @@ Respond in this JSON format:
 # HELPER FUNCTIONS
 # =============================================================================
 
-def format_observation_prompt(
-    observation: str,
-    context: Optional[dict[str, Any]] = None
-) -> str:
+
+def format_observation_prompt(observation: str, context: dict[str, Any] | None = None) -> str:
     """Format the observation analysis prompt."""
-    return OBSERVATION_ANALYSIS_PROMPT.format(
-        observation=observation,
-        context=context or {}
-    )
+    return OBSERVATION_ANALYSIS_PROMPT.format(observation=observation, context=context or {})
 
 
 def format_generation_prompt(
-    observation: Observation,
-    num_hypotheses: int = 5,
-    context: Optional[dict[str, Any]] = None
+    observation: Observation, num_hypotheses: int = 5, context: dict[str, Any] | None = None
 ) -> str:
     """Format the hypothesis generation prompt."""
     domain_guidance = DOMAIN_GUIDANCE.get(observation.domain, DOMAIN_GUIDANCE[Domain.GENERAL])
-    
+
     return HYPOTHESIS_GENERATION_PROMPT.format(
         observation=observation.fact,
         surprise_level=observation.surprise_level.value,
         domain=observation.domain.value,
         context=context or observation.context,
         num_hypotheses=num_hypotheses,
-        domain_guidance=domain_guidance
+        domain_guidance=domain_guidance,
     )
 
 
-def format_evaluation_prompt(
-    observation: Observation,
-    hypotheses: list[Hypothesis]
-) -> str:
+def format_evaluation_prompt(observation: Observation, hypotheses: list[Hypothesis]) -> str:
     """Format the hypothesis evaluation prompt."""
     hypotheses_json = [
         {
@@ -666,26 +651,26 @@ def format_evaluation_prompt(
             "explanation": h.explanation,
             "prior_probability": h.prior_probability,
             "assumptions": [a.statement for a in h.assumptions],
-            "testable_predictions": [p.prediction for p in h.testable_predictions]
+            "testable_predictions": [p.prediction for p in h.testable_predictions],
         }
         for h in hypotheses
     ]
-    
+
     import json
+
     return HYPOTHESIS_EVALUATION_PROMPT.format(
-        observation=observation.fact,
-        hypotheses_json=json.dumps(hypotheses_json, indent=2)
+        observation=observation.fact, hypotheses_json=json.dumps(hypotheses_json, indent=2)
     )
 
 
 def format_selection_prompt(
     observation: Observation,
     evaluated_hypotheses: list[Hypothesis],
-    weights: Optional[dict[str, float]] = None
+    weights: dict[str, float] | None = None,
 ) -> str:
     """Format the selection prompt."""
     import json
-    
+
     default_weights = {
         "explanatory_scope": 0.15,
         "explanatory_power": 0.25,
@@ -695,66 +680,63 @@ def format_selection_prompt(
         "analogy": 0.05,
         "fertility": 0.10,
     }
-    
+
     hypotheses_json = [
         {
             "id": h.id,
             "statement": h.statement,
             "scores": h.scores.model_dump(),
-            "composite_score": h.composite_score
+            "composite_score": h.composite_score,
         }
         for h in evaluated_hypotheses
     ]
-    
+
     return SELECTION_PROMPT.format(
         observation=observation.fact,
         evaluated_hypotheses_json=json.dumps(hypotheses_json, indent=2),
-        weights_json=json.dumps(weights or default_weights, indent=2)
+        weights_json=json.dumps(weights or default_weights, indent=2),
     )
 
 
 def format_single_shot_prompt(
     observation: str,
-    context: Optional[dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     domain: Domain = Domain.GENERAL,
-    num_hypotheses: int = 5
+    num_hypotheses: int = 5,
 ) -> str:
     """Format the comprehensive single-shot abduction prompt."""
     domain_guidance = DOMAIN_GUIDANCE.get(domain, DOMAIN_GUIDANCE[Domain.GENERAL])
-    
+
     return ABDUCTION_SINGLE_SHOT_PROMPT.format(
         observation=observation,
         context=context or {},
         num_hypotheses=num_hypotheses,
-        domain_guidance=domain_guidance
+        domain_guidance=domain_guidance,
     )
 
 
 def format_critic_prompt(
-    critic: str,
-    observation: Observation,
-    hypotheses: list[Hypothesis]
+    critic: str, observation: Observation, hypotheses: list[Hypothesis]
 ) -> str:
     """Format a critic evaluation prompt."""
     import json
-    
+
     if critic not in CRITIC_PROMPTS:
         raise ValueError(f"Unknown critic: {critic}. Available: {list(CRITIC_PROMPTS.keys())}")
-    
+
     hypotheses_json = [
         {
             "id": h.id,
             "statement": h.statement,
             "explanation": h.explanation,
             "assumptions": [a.statement for a in h.assumptions],
-            "testable_predictions": [p.prediction for p in h.testable_predictions]
+            "testable_predictions": [p.prediction for p in h.testable_predictions],
         }
         for h in hypotheses
     ]
-    
+
     return CRITIC_PROMPTS[critic].format(
-        observation=observation.fact,
-        hypotheses_json=json.dumps(hypotheses_json, indent=2)
+        observation=observation.fact, hypotheses_json=json.dumps(hypotheses_json, indent=2)
     )
 
 

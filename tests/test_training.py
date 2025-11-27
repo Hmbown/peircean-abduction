@@ -3,9 +3,10 @@ Tests for Peircean Training Data Generator.
 """
 
 import json
-import pytest
+
 from peircean.core.models import Domain
 from peircean.training.generator import AbductiveDataGenerator, AbductiveExample
+
 
 class TestAbductiveDataGenerator:
     """Test data generator functionality."""
@@ -40,7 +41,7 @@ class TestAbductiveDataGenerator:
         generator = AbductiveDataGenerator(seed=42)
         jsonl_output = generator.generate_jsonl(n=5)
 
-        lines = jsonl_output.strip().split('\n')
+        lines = jsonl_output.strip().split("\n")
         assert len(lines) == 5
 
         for line in lines:

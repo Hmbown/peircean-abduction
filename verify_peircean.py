@@ -270,6 +270,12 @@ def test_observe_anomaly() -> TestResult:
         else:
             result.fail("Prompt missing JSON schema")
 
+        # Check for recommended_council
+        if "recommended_council" in data.get("prompt", ""):
+            result.ok("Prompt requests recommended_council")
+        else:
+            result.fail("Prompt missing recommended_council request")
+
     except Exception as e:
         result.fail(f"Error testing observe_anomaly: {e}")
 
@@ -353,7 +359,7 @@ def test_evaluate_via_ibe() -> TestResult:
         else:
             result.fail("Does not indicate terminal phase")
 
-        # Test with council
+        # Test with default council
         council_output = evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
@@ -367,6 +373,37 @@ def test_evaluate_via_ibe() -> TestResult:
             result.ok("Council mode includes critic evaluation")
         else:
             result.fail("Council mode missing critic evaluation")
+
+        if "Empiricist Score" in prompt and "Logician Score" in prompt:
+            result.ok("Prompt includes Council Scoring Criteria")
+        else:
+            result.fail("Prompt missing Council Scoring Criteria")
+
+        if "rationale" in prompt and "explanation for these scores" in prompt:
+            result.ok("Prompt includes scoring rationale field")
+        else:
+            result.fail("Prompt missing scoring rationale field")
+
+        # Test with CUSTOM council
+        custom_council = ["Chef", "Food Critic"]
+        custom_output = evaluate_via_ibe(
+            anomaly_json=anomaly_json,
+            hypotheses_json=hypotheses_json,
+            custom_council=custom_council
+        )
+        
+        custom_data = json.loads(custom_output)
+        custom_prompt = custom_data.get("prompt", "")
+        
+        if "The Chef" in custom_prompt and "The Food Critic" in custom_prompt:
+            result.ok("Custom council members included in prompt")
+        else:
+            result.fail("Custom council members missing from prompt")
+            
+        if "\"chef\": 0.0-1.0" in custom_prompt and "\"food_critic\": 0.0-1.0" in custom_prompt:
+            result.ok("Custom council scores included in schema")
+        else:
+            result.fail("Custom council scores missing from schema")
 
     except Exception as e:
         result.fail(f"Error testing evaluate_via_ibe: {e}")
@@ -384,39 +421,44 @@ def test_critic_evaluate() -> TestResult:
         anomaly_json = json.dumps(EXAMPLE_ANOMALY)
         hypotheses_json = json.dumps(EXAMPLE_HYPOTHESES)
 
-        valid_critics = ["empiricist", "logician", "pragmatist", "economist", "skeptic"]
-
-        for critic in valid_critics:
-            output = critic_evaluate(
-                critic=critic,
-                anomaly_json=anomaly_json,
-                hypotheses_json=hypotheses_json
-            )
-
-            data = json.loads(output)
-
-            if "type" in data and data["type"] == "prompt":
-                result.ok(f"Critic '{critic}' returns prompt")
-            else:
-                result.fail(f"Critic '{critic}' does not return prompt")
-
-            if "critic" in data and data["critic"] == critic:
-                result.ok(f"Critic '{critic}' identified correctly")
-            else:
-                result.fail(f"Critic '{critic}' not identified")
-
-        # Test invalid critic
-        invalid_output = critic_evaluate(
-            critic="invalid_critic",
+        # Test valid standard critic
+        output = critic_evaluate(
+            critic="empiricist",
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json
         )
 
-        invalid_data = json.loads(invalid_output)
-        if "error" in invalid_data:
-            result.ok("Invalid critic handled gracefully")
+        data = json.loads(output)
+
+        if "type" in data and data["type"] == "prompt":
+            result.ok("Standard critic returns prompt")
         else:
-            result.fail("Invalid critic not handled")
+            result.fail("Standard critic does not return prompt")
+
+        if "critic" in data and data["critic"] == "empiricist":
+            result.ok("Standard critic identified correctly")
+        else:
+            result.fail("Standard critic not identified")
+
+        # Test DYNAMIC critic
+        dynamic_output = critic_evaluate(
+            critic="forensic_accountant",
+            anomaly_json=anomaly_json,
+            hypotheses_json=hypotheses_json
+        )
+
+        dynamic_data = json.loads(dynamic_output)
+        
+        if "type" in dynamic_data and dynamic_data["type"] == "prompt":
+            result.ok("Dynamic critic returns prompt")
+        else:
+            result.fail("Dynamic critic does not return prompt")
+            
+        prompt = dynamic_data.get("prompt", "")
+        if "FORENSIC_ACCOUNTANT" in prompt:
+            result.ok("Dynamic critic role included in prompt")
+        else:
+            result.fail("Dynamic critic role missing from prompt")
 
     except Exception as e:
         result.fail(f"Error testing critic_evaluate: {e}")

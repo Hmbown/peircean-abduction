@@ -19,7 +19,6 @@ from __future__ import annotations
 import json
 import logging
 import sys
-from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -39,7 +38,7 @@ logger = logging.getLogger("peircean")
 # =============================================================================
 mcp = FastMCP(
     name="peircean",
-    instructions="A Logic Harness for abductive inference. Anomaly in → Hypothesis out."
+    instructions="A Logic Harness for abductive inference. Anomaly in → Hypothesis out.",
 )
 
 
@@ -67,11 +66,7 @@ VIOLATION = TERMINATION."""
 # TOOL 1: OBSERVE ANOMALY (Phase 1 - Register C)
 # =============================================================================
 @mcp.tool()
-def observe_anomaly(
-    observation: str,
-    context: Optional[str] = None,
-    domain: str = "general"
-) -> str:
+def observe_anomaly(observation: str, context: str | None = None, domain: str = "general") -> str:
     """
     PHASE 1: Register the surprising fact (C).
 
@@ -109,8 +104,8 @@ def observe_anomaly(
     """
     logger.info(f"Phase 1: Observing anomaly in domain '{domain}'")
 
-    from ..core.prompts import DOMAIN_GUIDANCE
     from ..core.models import Domain
+    from ..core.prompts import DOMAIN_GUIDANCE
 
     try:
         domain_enum = Domain(domain)
@@ -123,6 +118,7 @@ def observe_anomaly(
     prompt = f"""{SYSTEM_DIRECTIVE}
 
 TASK: Analyze this observation to determine if it constitutes a "surprising fact" (C) in the Peircean sense.
+Also, NOMINATE a "Council of Critics" (3-5 specialist roles) who would be best suited to evaluate hypotheses for this specific anomaly.
 
 ## The Observation
 {observation}
@@ -156,30 +152,31 @@ Respond with ONLY this JSON structure:
         "domain": "{domain}",
         "context": ["context item 1", "context item 2"],
         "key_features": ["surprising feature 1", "surprising feature 2"],
-        "surprise_source": "why this violates expectations"
+        "surprise_source": "why this violates expectations",
+        "recommended_council": ["Specialist Role 1", "Specialist Role 2", "Specialist Role 3"]
     }}
 }}
 ```
 """
 
-    return json.dumps({
-        "type": "prompt",
-        "phase": 1,
-        "phase_name": "observation",
-        "prompt": prompt,
-        "next_tool": "generate_hypotheses",
-        "usage": "Execute this prompt with an LLM, then pass the anomaly JSON to generate_hypotheses()"
-    }, indent=2)
+    return json.dumps(
+        {
+            "type": "prompt",
+            "phase": 1,
+            "phase_name": "observation",
+            "prompt": prompt,
+            "next_tool": "generate_hypotheses",
+            "usage": "Execute this prompt with an LLM, then pass the anomaly JSON to generate_hypotheses()",
+        },
+        indent=2,
+    )
 
 
 # =============================================================================
 # TOOL 2: GENERATE HYPOTHESES (Phase 2 - Generate A's)
 # =============================================================================
 @mcp.tool()
-def generate_hypotheses(
-    anomaly_json: str,
-    num_hypotheses: int = 5
-) -> str:
+def generate_hypotheses(anomaly_json: str, num_hypotheses: int = 5) -> str:
     """
     PHASE 2: Generate candidate hypotheses (A's) that would explain the anomaly.
 
@@ -232,18 +229,21 @@ def generate_hypotheses(
             anomaly = anomaly_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in anomaly_json parameter")
-        return json.dumps({
-            "error": "Invalid JSON in anomaly_json parameter",
-            "hint": "Pass the raw JSON output from observe_anomaly"
-        }, indent=2)
+        return json.dumps(
+            {
+                "error": "Invalid JSON in anomaly_json parameter",
+                "hint": "Pass the raw JSON output from observe_anomaly",
+            },
+            indent=2,
+        )
 
     fact = anomaly.get("fact", str(anomaly))
     surprise_level = anomaly.get("surprise_level", "surprising")
     domain = anomaly.get("domain", "general")
     context = anomaly.get("context", [])
 
-    from ..core.prompts import DOMAIN_GUIDANCE
     from ..core.models import Domain
+    from ..core.prompts import DOMAIN_GUIDANCE
 
     try:
         domain_enum = Domain(domain)
@@ -314,14 +314,17 @@ Respond with ONLY this JSON structure:
 Generate exactly {num_hypotheses} hypotheses.
 """
 
-    return json.dumps({
-        "type": "prompt",
-        "phase": 2,
-        "phase_name": "hypothesis_generation",
-        "prompt": prompt,
-        "next_tool": "evaluate_via_ibe",
-        "usage": "Execute this prompt with an LLM, then pass the hypotheses JSON to evaluate_via_ibe()"
-    }, indent=2)
+    return json.dumps(
+        {
+            "type": "prompt",
+            "phase": 2,
+            "phase_name": "hypothesis_generation",
+            "prompt": prompt,
+            "next_tool": "evaluate_via_ibe",
+            "usage": "Execute this prompt with an LLM, then pass the hypotheses JSON to evaluate_via_ibe()",
+        },
+        indent=2,
+    )
 
 
 # =============================================================================
@@ -331,7 +334,8 @@ Generate exactly {num_hypotheses} hypotheses.
 def evaluate_via_ibe(
     anomaly_json: str,
     hypotheses_json: str,
-    use_council: bool = False
+    use_council: bool = False,
+    custom_council: list[str] = None,
 ) -> str:
     """
     PHASE 3: Select the best explanation using Inference to Best Explanation (IBE).
@@ -343,49 +347,18 @@ def evaluate_via_ibe(
 
     Args:
         anomaly_json: The JSON output from observe_anomaly (Phase 1).
-            Example: '{"anomaly": {"fact": "...", "surprise_level": "high", ...}}'
         hypotheses_json: The JSON output from generate_hypotheses (Phase 2).
-            Example: '{"hypotheses": [{"id": "H1", "statement": "...", ...}]}'
-        use_council: Include Council of Critics multi-perspective evaluation (default: false).
-            When true, hypotheses are evaluated by 5 critics:
-            - Empiricist: testability, evidence
-            - Logician: consistency, parsimony
-            - Pragmatist: actionability, consequences
-            - Economist: cost-benefit of investigation
-            - Skeptic: alternative explanations, edge cases
+        use_council: Include Council of Critics (default: false).
+        custom_council: Optional list of specific critic roles to use.
+            Example: ["Forensic Accountant", "Security Engineer", "Legal Counsel"]
+            If provided, overrides the default 5 critics.
 
     Returns:
-        A prompt. Execute it to get JSON like:
-        {
-            "evaluation": {
-                "best_hypothesis": "H1",
-                "scores": {
-                    "H1": {
-                        "explanatory_power": 0.85,
-                        "parsimony": 0.70,
-                        "testability": 0.90,
-                        "consilience": 0.75,
-                        "composite": 0.80
-                    },
-                    "H2": {...}
-                },
-                "ranking": ["H1", "H3", "H2"],
-                "verdict": "investigate",
-                "confidence": 0.78,
-                "rationale": "H1 provides the strongest explanation with lowest test cost",
-                "next_steps": [
-                    "Pull support ticket trends for churned users",
-                    "Analyze usage patterns 30 days pre-churn"
-                ],
-                "alternative_if_wrong": "If H1 falsified, H3 becomes most probable"
-            }
-        }
-
-    Termination:
-        This is the final phase. The output contains the selected hypothesis
-        and recommended next steps for testing/validation.
+        A prompt for IBE evaluation with the specified council.
     """
-    logger.info(f"Phase 3: Evaluating hypotheses via IBE (council={use_council})")
+    logger.info(
+        f"Phase 3: Evaluating hypotheses via IBE (council={use_council}, custom={custom_council})"
+    )
 
     # Parse inputs
     try:
@@ -396,9 +369,7 @@ def evaluate_via_ibe(
             anomaly = anomaly_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in anomaly_json parameter")
-        return json.dumps({
-            "error": "Invalid JSON in anomaly_json parameter"
-        }, indent=2)
+        return json.dumps({"error": "Invalid JSON in anomaly_json parameter"}, indent=2)
 
     try:
         hypotheses_data = json.loads(hypotheses_json)
@@ -408,15 +379,39 @@ def evaluate_via_ibe(
             hypotheses = hypotheses_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in hypotheses_json parameter")
-        return json.dumps({
-            "error": "Invalid JSON in hypotheses_json parameter"
-        }, indent=2)
+        return json.dumps({"error": "Invalid JSON in hypotheses_json parameter"}, indent=2)
 
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
 
     council_section = ""
-    if use_council:
+    scoring_criteria = ""
+    score_keys = []
+
+    if custom_council:
+        council_section = "## Council of Critics Evaluation\n\nEvaluate each hypothesis from the perspectives of these nominated specialists:\n\n"
+        scoring_criteria = "## Council Scoring Criteria\n\nScore each hypothesis (0.0-1.0) based on the Specialist's perspective:\n\n"
+
+        for role in custom_council:
+            slug = role.lower().replace(" ", "_")
+            score_keys.append(slug)
+
+            council_section += f"### The {role}\n"
+            council_section += (
+                f"- How does this hypothesis look from the perspective of a {role}?\n"
+            )
+            council_section += (
+                "- What specific evidence or logic supports/refutes it in your domain?\n\n"
+            )
+
+            scoring_criteria += (
+                f"{len(score_keys)}. **{role} Score**: Endorsement from the {role}.\n"
+            )
+            scoring_criteria += "   - 1.0: Strongly endorsed by this domain expertise.\n"
+            scoring_criteria += "   - 0.0: Rejected by this domain expertise.\n\n"
+
+    elif use_council:
+        score_keys = ["empiricist", "logician", "pragmatist", "economist", "skeptic"]
         council_section = """
 ## Council of Critics Evaluation
 
@@ -449,6 +444,53 @@ Before scoring, evaluate each hypothesis from these 5 perspectives:
 
 Include a "council" section in your output with each critic's verdict.
 """
+        scoring_criteria = """
+## Council Scoring Criteria
+
+Score each hypothesis (0.0-1.0) based on the Council's perspectives:
+
+1. **Empiricist Score**: Fit with evidence and testability.
+   - 1.0: Strongly supported by evidence, easily testable.
+   - 0.0: Contradicted by evidence, unfalsifiable.
+
+2. **Logician Score**: Internal consistency and parsimony.
+   - 1.0: Perfectly consistent, minimal assumptions.
+   - 0.0: Self-contradictory, relies on ad-hoc assumptions.
+
+3. **Pragmatist Score**: Actionability and utility.
+   - 1.0: Clear path to action, high utility if true.
+   - 0.0: No clear action, irrelevant if true.
+
+4. **Economist Score**: Cost-effectiveness.
+   - 1.0: Cheap/fast to verify, high value of information.
+   - 0.0: Prohibitively expensive to verify, low value.
+
+5. **Skeptic Score**: Robustness (Higher is BETTER/HARDER to falsify).
+   - 1.0: Withstands strong scrutiny, no obvious alternatives.
+   - 0.0: Easily debunked, many simpler alternatives.
+"""
+    else:
+        # No council - fallback to standard IBE criteria if desired,
+        # but for now we'll just use the standard 5 criteria as "General" scores
+        # or we could enforce council usage. Let's default to the standard 5
+        # even if use_council is False, to keep schema consistent,
+        # or we can simplify.
+        # For this implementation, we will default to the standard 5 criteria
+        # but label them as "General Evaluation".
+        score_keys = ["explanatory_power", "parsimony", "testability", "consilience", "fertility"]
+        scoring_criteria = """
+## Evaluation Criteria
+
+Score each hypothesis (0.0-1.0) on:
+1. Explanatory Power
+2. Parsimony
+3. Testability
+4. Consilience
+5. Fertility
+"""
+
+    # Construct the dynamic JSON schema for scores
+    score_fields = ",\n                ".join([f'"{k}": 0.0-1.0' for k in score_keys])
 
     prompt = f"""{SYSTEM_DIRECTIVE}
 
@@ -462,34 +504,7 @@ TASK: Select the BEST EXPLANATION using Inference to Best Explanation (IBE).
 
 {council_section}
 
-## IBE Evaluation Criteria
-
-Score each hypothesis (0.0-1.0) on:
-
-1. **Explanatory Power**: How well does it make C "a matter of course"?
-   - 1.0: Makes the observation completely expected
-   - 0.5: Partially explains
-   - 0.0: Leaves observation just as surprising
-
-2. **Parsimony**: How few assumptions are required? (Occam's Razor)
-   - 1.0: Minimal assumptions, all well-established
-   - 0.5: Moderate assumptions
-   - 0.0: Many extraordinary assumptions
-
-3. **Testability**: How easy is it to verify/falsify?
-   - 1.0: Immediately testable with available resources
-   - 0.5: Testable with effort
-   - 0.0: Very difficult to test
-
-4. **Consilience**: How well does it fit with other knowledge?
-   - 1.0: Perfectly consistent with established knowledge
-   - 0.5: Compatible but requires adjustment
-   - 0.0: Contradicts established knowledge
-
-5. **Fertility**: Does it generate new predictions/insights?
-   - 1.0: Rich implications, many testable predictions
-   - 0.5: Some additional predictions
-   - 0.0: Explains only this observation
+{scoring_criteria}
 
 ## Verdict Options
 
@@ -507,12 +522,9 @@ Respond with ONLY this JSON structure:
         "best_hypothesis": "H1",
         "scores": {{
             "H1": {{
-                "explanatory_power": 0.0-1.0,
-                "parsimony": 0.0-1.0,
-                "testability": 0.0-1.0,
-                "consilience": 0.0-1.0,
-                "fertility": 0.0-1.0,
-                "composite": 0.0-1.0
+                {score_fields},
+                "composite": 0.0-1.0,
+                "rationale": "explanation for these scores"
             }}
         }},
         "ranking": ["H1", "H3", "H2"],
@@ -526,14 +538,17 @@ Respond with ONLY this JSON structure:
 ```
 """
 
-    return json.dumps({
-        "type": "prompt",
-        "phase": 3,
-        "phase_name": "inference_to_best_explanation",
-        "prompt": prompt,
-        "next_tool": None,
-        "usage": "Execute this prompt with an LLM. This is the final phase - output contains the selected hypothesis and recommended actions."
-    }, indent=2)
+    return json.dumps(
+        {
+            "type": "prompt",
+            "phase": 3,
+            "phase_name": "inference_to_best_explanation",
+            "prompt": prompt,
+            "next_tool": None,
+            "usage": "Execute this prompt with an LLM. This is the final phase - output contains the selected hypothesis and recommended actions.",
+        },
+        indent=2,
+    )
 
 
 # =============================================================================
@@ -541,10 +556,7 @@ Respond with ONLY this JSON structure:
 # =============================================================================
 @mcp.tool()
 def abduce_single_shot(
-    observation: str,
-    context: Optional[str] = None,
-    domain: str = "general",
-    num_hypotheses: int = 5
+    observation: str, context: str | None = None, domain: str = "general", num_hypotheses: int = 5
 ) -> str:
     """
     SINGLE-SHOT: Complete abductive reasoning in one prompt.
@@ -588,8 +600,8 @@ def abduce_single_shot(
     """
     logger.info(f"Single-shot abduction in domain '{domain}'")
 
-    from ..core.prompts import DOMAIN_GUIDANCE
     from ..core.models import Domain
+    from ..core.prompts import DOMAIN_GUIDANCE
 
     try:
         domain_enum = Domain(domain)
@@ -675,70 +687,46 @@ Respond with ONLY this JSON structure:
 ```
 """
 
-    return json.dumps({
-        "type": "prompt",
-        "phase": "single_shot",
-        "phase_name": "complete_abduction",
-        "prompt": prompt,
-        "usage": "Execute this prompt with an LLM for complete abductive analysis in one step."
-    }, indent=2)
+    return json.dumps(
+        {
+            "type": "prompt",
+            "phase": "single_shot",
+            "phase_name": "complete_abduction",
+            "prompt": prompt,
+            "usage": "Execute this prompt with an LLM for complete abductive analysis in one step.",
+        },
+        indent=2,
+    )
 
 
 # =============================================================================
 # TOOL: CRITIC EVALUATION (Council of Critics)
 # =============================================================================
 @mcp.tool()
-def critic_evaluate(
-    critic: str,
-    anomaly_json: str,
-    hypotheses_json: str
-) -> str:
+def critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str:
     """
     COUNCIL: Get evaluation from a specific critic perspective.
 
     The Council of Critics provides multi-perspective hypothesis evaluation.
-    Use this when you want detailed analysis from a specific viewpoint.
-
-    Available Critics:
-        - empiricist: Evaluates testability and evidence
-        - logician: Evaluates consistency and parsimony
-        - pragmatist: Evaluates actionability and consequences
-        - economist: Evaluates cost-benefit of investigation
-        - skeptic: Challenges assumptions, proposes alternatives
+    You can request ANY specialist role.
 
     Args:
-        critic: Which critic to consult.
-            Options: "empiricist", "logician", "pragmatist", "economist", "skeptic"
-            Example: "skeptic"
+        critic: The role to adopt.
+            Examples: "empiricist", "skeptic", "forensic_accountant", "security_engineer"
         anomaly_json: The JSON output from observe_anomaly (Phase 1).
-            Example: '{"anomaly": {"fact": "...", "surprise_level": "high"}}'
         hypotheses_json: The JSON output from generate_hypotheses (Phase 2).
-            Example: '{"hypotheses": [{"id": "H1", "statement": "..."}]}'
+
+    Example:
+        critic_evaluate(
+            critic="forensic_accountant",
+            anomaly_json='{"anomaly": ...}',
+            hypotheses_json='{"hypotheses": ...}'
+        )
 
     Returns:
-        A prompt for the specified critic's evaluation. Execute to get JSON like:
-        {
-            "perspective": "skeptic",
-            "evaluation": "overall skeptical assessment",
-            "per_hypothesis": {
-                "H1": {
-                    "falsification_criteria": ["how to disprove"],
-                    "unjustified_assumptions": ["assumption 1"],
-                    "skepticism_score": 0.75
-                }
-            },
-            "strongest_objections": {"H1": "main objection"}
-        }
+        A prompt for the specified critic's evaluation.
     """
     logger.info(f"Council: Consulting the {critic}")
-
-    valid_critics = ["empiricist", "logician", "pragmatist", "economist", "skeptic"]
-    if critic not in valid_critics:
-        logger.error(f"Invalid critic: {critic}")
-        return json.dumps({
-            "error": f"Invalid critic: {critic}",
-            "valid_options": valid_critics
-        }, indent=2)
 
     # Parse inputs
     try:
@@ -756,16 +744,9 @@ def critic_evaluate(
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
 
-    critic_prompts = {
-        "empiricist": f"""You are THE EMPIRICIST on the Council of Critics.
+    prompt = f"""You are THE {critic.upper()} on the Council of Critics.
 
-Your role: Evaluate hypotheses based on EVIDENCE and OBSERVATION.
-
-Questions you must answer:
-- What empirical evidence supports or refutes each hypothesis?
-- What observations would we expect if each hypothesis were true?
-- Have similar situations produced similar explanations historically?
-- What data is missing that would be decisive?
+Your role: Evaluate hypotheses based on the specific expertise, concerns, and methodology of a {critic}.
 
 ## The Surprising Fact
 {fact}
@@ -773,179 +754,39 @@ Questions you must answer:
 ## Hypotheses
 {hypotheses_formatted}
 
+## Your Evaluation
+
+1. How does this look from the perspective of a {critic}?
+2. What specific evidence or logic supports/refutes each hypothesis in your domain?
+3. What would you recommend checking?
+
 Output ONLY this JSON:
 ```json
 {{
-    "perspective": "empiricist",
-    "evaluation": "overall empirical assessment",
+    "perspective": "{critic}",
+    "evaluation": "overall assessment from this perspective",
     "per_hypothesis": {{
         "H1": {{
-            "supporting_evidence": ["evidence 1"],
-            "contradicting_evidence": ["evidence 1"],
-            "missing_evidence": ["evidence 1"],
-            "empirical_score": 0.0-1.0
+            "strengths": ["point 1"],
+            "weaknesses": ["point 1"],
+            "score": 0.0-1.0
         }}
     }},
-    "recommended_tests": ["test 1", "test 2"],
     "strongest_hypothesis": "H1",
     "concerns": ["concern 1"]
 }}
-```""",
-
-        "logician": f"""You are THE LOGICIAN on the Council of Critics.
-
-Your role: Evaluate hypotheses based on LOGICAL CONSISTENCY.
-
-Questions you must answer:
-- Is each hypothesis internally consistent?
-- Does it contradict any known facts?
-- Are the assumptions compatible with each other?
-- Does the explanation actually follow from the hypothesis?
-
-## The Surprising Fact
-{fact}
-
-## Hypotheses
-{hypotheses_formatted}
-
-Output ONLY this JSON:
-```json
-{{
-    "perspective": "logician",
-    "evaluation": "overall logical assessment",
-    "per_hypothesis": {{
-        "H1": {{
-            "internal_consistency": true,
-            "logical_gaps": ["gap 1"],
-            "contradictions": ["contradiction 1"],
-            "validity_score": 0.0-1.0
-        }}
-    }},
-    "strongest_hypothesis": "H1",
-    "logical_concerns": ["concern 1"]
-}}
-```""",
-
-        "pragmatist": f"""You are THE PRAGMATIST on the Council of Critics.
-
-Your role: Evaluate hypotheses based on PRACTICAL CONSEQUENCES.
-
-Peirce's Pragmatic Maxim: "Consider what effects, that might conceivably have practical bearings, we conceive the object of our conception to have."
-
-Questions you must answer:
-- What practical difference does each hypothesis make?
-- If true, what should we DO differently?
-- What are the real-world implications?
-- Which hypothesis is most actionable?
-
-## The Surprising Fact
-{fact}
-
-## Hypotheses
-{hypotheses_formatted}
-
-Output ONLY this JSON:
-```json
-{{
-    "perspective": "pragmatist",
-    "evaluation": "overall pragmatic assessment",
-    "per_hypothesis": {{
-        "H1": {{
-            "practical_implications": ["implication 1"],
-            "recommended_actions": ["action 1"],
-            "actionability_score": 0.0-1.0
-        }}
-    }},
-    "most_actionable": "H1",
-    "pragmatic_concerns": ["concern 1"]
-}}
-```""",
-
-        "economist": f"""You are THE ECONOMIST OF RESEARCH on the Council of Critics.
-
-Your role: Evaluate hypotheses based on ECONOMY OF INQUIRY.
-
-Peirce emphasized the "economy of research" - test hypotheses in an order that maximizes expected information gain per unit cost.
-
-Questions you must answer:
-- Which hypothesis is cheapest to test?
-- Which would be most informative if confirmed or refuted?
-- What's the expected value of investigating each?
-- What's the opportunity cost of pursuing each path?
-
-## The Surprising Fact
-{fact}
-
-## Hypotheses
-{hypotheses_formatted}
-
-Output ONLY this JSON:
-```json
-{{
-    "perspective": "economist",
-    "evaluation": "overall economic assessment",
-    "per_hypothesis": {{
-        "H1": {{
-            "test_cost": "low|medium|high",
-            "information_value": 0.0-1.0,
-            "expected_value": 0.0-1.0,
-            "time_to_test": "estimate"
-        }}
-    }},
-    "optimal_test_order": ["H1", "H3", "H2"],
-    "best_roi_hypothesis": "H1",
-    "recommended_first_test": "description"
-}}
-```""",
-
-        "skeptic": f"""You are THE SKEPTIC on the Council of Critics.
-
-Your role: Challenge hypotheses and identify potential flaws.
-
-Questions you must answer:
-- What would DISPROVE each hypothesis?
-- What are we assuming without justification?
-- Could this be explained more simply?
-- Are we falling for any cognitive biases?
-
-## The Surprising Fact
-{fact}
-
-## Hypotheses
-{hypotheses_formatted}
-
-Output ONLY this JSON:
-```json
-{{
-    "perspective": "skeptic",
-    "evaluation": "overall skeptical assessment",
-    "per_hypothesis": {{
-        "H1": {{
-            "falsification_criteria": ["how to disprove"],
-            "unjustified_assumptions": ["assumption 1"],
-            "potential_biases": ["bias 1"],
-            "simpler_alternatives": ["alternative 1"],
-            "skepticism_score": 0.0-1.0
-        }}
-    }},
-    "most_vulnerable_hypothesis": "H1",
-    "strongest_objections": {{
-        "H1": "main objection"
-    }},
-    "devil_advocate_tests": ["test 1"]
-}}
 ```"""
-    }
 
-    prompt = f"{SYSTEM_DIRECTIVE}\n\n{critic_prompts[critic]}"
-
-    return json.dumps({
-        "type": "prompt",
-        "phase": "council",
-        "critic": critic,
-        "prompt": prompt,
-        "usage": f"Execute this prompt to get the {critic}'s evaluation of the hypotheses."
-    }, indent=2)
+    return json.dumps(
+        {
+            "type": "prompt",
+            "phase": "critic_evaluation",
+            "critic": critic,
+            "prompt": prompt,
+            "usage": f"Execute this prompt to get the {critic}'s perspective.",
+        },
+        indent=2,
+    )
 
 
 # =============================================================================
