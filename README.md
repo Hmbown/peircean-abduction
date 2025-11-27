@@ -1,6 +1,7 @@
 # Peircean
 
 [![CI](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/peircean-abduction.svg)](https://pypi.org/project/peircean-abduction/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -45,6 +46,50 @@ The harness forces the model to split the anomaly into distinct, testable hypoth
 > **Rationale:** H1 uniquely explains the vector (steering INTO collision). H3 explains the burn but not the direction.
 
 **Key Insight:** H3 (glitch) has higher *prior probability* (0.40), but H1 (attack) has higher *explanatory power*. The harness catches this distinction.
+
+<details>
+<summary>See full Phase 1 output</summary>
+
+```json
+{
+  "fact": "Defunct 'debris' satellite executed a controlled burn 10s before collision, steering into the target",
+  "surprise_level": "anomalous",
+  "surprise_score": 0.95,
+  "expected_state": "Debris satellites cannot maneuver; rational actors avoid collisions",
+  "surprise_source": "Violates definition of space debris AND expectation of rational state actor behavior"
+}
+```
+
+</details>
+
+<details>
+<summary>See full Phase 3 IBE evaluation</summary>
+
+```
+              | Scope | Power | Parsimony | Testability | Composite
+--------------|-------|-------|-----------|-------------|----------
+H1: Attack    | 0.95  | 0.90  | 0.70      | 0.85        | 0.87
+H2: Escalation| 0.80  | 0.75  | 0.65      | 0.70        | 0.73
+H3: Glitch    | 0.60  | 0.55  | 0.90      | 0.80        | 0.68
+
+SELECTED: H1 (Kinetic strike)
+Confidence: 0.87
+Recommended: Check RF spectrum logs for uplink at T-10s
+```
+
+</details>
+
+---
+
+## The Difference
+
+| Aspect | Standard LLM | Peircean Harness |
+|--------|--------------|------------------|
+| **Approach** | Jury (probability-based) | Detective (investigation-based) |
+| **Output** | Single "most likely" answer | Ranked hypotheses with testable predictions |
+| **Uncertainty** | Hidden in hedging language | Explicit via surprise scores (0.0-1.0) |
+| **Actionability** | "This is probably true" | "Test H1 by checking X" |
+| **Distinct Options** | Lumped together | Kept separate for evaluation |
 
 ---
 
@@ -196,12 +241,19 @@ Use command `python` and args `["-m", "peircean.mcp.server"]`.
 | `technical` | Race conditions, resource exhaustion |
 | `scientific` | Measurement error, confounding variables |
 
-## Documentation & Contributing
+## Documentation
 
-- [Quick Start Guide](docs/QUICKSTART.md)
-- [User Guide](docs/USER_GUIDE.md)
-- [MCP Reference](docs/MCP.md)
+- [Quick Start Guide](docs/getting-started/quickstart.md)
+- [User Guide](docs/guides/user-guide.md)
+- [MCP Integration](docs/guides/mcp-integration.md)
+- [Abductive Reasoning Concepts](docs/concepts/abductive-reasoning.md)
+- [Example: Kubernetes Anomaly](docs/examples/kubernetes-anomaly.md)
+
+## Contributing
+
 - [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 

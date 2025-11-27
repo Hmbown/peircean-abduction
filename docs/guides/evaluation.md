@@ -49,9 +49,9 @@ When calling `peircean_generate_hypotheses` with invalid `num_hypotheses`:
 - Valid range is 1-20
 
 **Validation**:
-- Call with `num_hypotheses=0` → error
-- Call with `num_hypotheses=25` → error
-- Call with `num_hypotheses=5` → success
+- Call with `num_hypotheses=0` -> error
+- Call with `num_hypotheses=25` -> error
+- Call with `num_hypotheses=5` -> success
 
 ---
 
@@ -83,9 +83,9 @@ The server should include domain-specific guidance in prompts:
 **Category**: IBE Evaluation
 
 The `peircean_evaluate_via_ibe` tool should support multiple council modes:
-1. `use_council=False` → Standard IBE criteria (explanatory_power, parsimony, etc.)
-2. `use_council=True` → Default 5 critics (Empiricist, Logician, Pragmatist, Economist, Skeptic)
-3. `custom_council=["Role1", "Role2"]` → Custom specialist roles
+1. `use_council=False` -> Standard IBE criteria (explanatory_power, parsimony, etc.)
+2. `use_council=True` -> Default 5 critics (Empiricist, Logician, Pragmatist, Economist, Skeptic)
+3. `custom_council=["Role1", "Role2"]` -> Custom specialist roles
 
 **Validation**: Call with each mode and verify the prompt includes the appropriate evaluation framework.
 
@@ -106,9 +106,9 @@ All tools should have proper annotations:
 **Category**: Error Handling
 
 When passing invalid JSON to Phase 2 or Phase 3 tools:
-- `peircean_generate_hypotheses(anomaly_json="not json")` → error with hint
-- `peircean_evaluate_via_ibe(anomaly_json="{}", hypotheses_json="not json")` → error with hint
-- `peircean_critic_evaluate(critic="skeptic", anomaly_json="bad", hypotheses_json="{}")` → error with hint
+- `peircean_generate_hypotheses(anomaly_json="not json")` -> error with hint
+- `peircean_evaluate_via_ibe(anomaly_json="{}", hypotheses_json="not json")` -> error with hint
+- `peircean_critic_evaluate(critic="skeptic", anomaly_json="bad", hypotheses_json="{}")` -> error with hint
 
 **Validation**: Call each tool with malformed JSON and verify helpful error responses.
 

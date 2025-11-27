@@ -4,114 +4,15 @@ Comprehensive guide to Peircean Abduction: the abductive reasoning harness for L
 
 ## Table of Contents
 
-1. [Philosophy: Why Abduction?](#philosophy-why-abduction)
-2. [The Three Phases](#the-three-phases)
-3. [Using the Agent](#using-the-agent)
-4. [Prompt-Only Mode](#prompt-only-mode)
-5. [The Council of Critics](#the-council-of-critics)
-6. [Domain Configuration](#domain-configuration)
-7. [IBE Selection Criteria](#ibe-selection-criteria)
-8. [Output Formats](#output-formats)
-9. [Best Practices](#best-practices)
+1. [Using the Agent](#using-the-agent)
+2. [Prompt-Only Mode](#prompt-only-mode)
+3. [The Council of Critics](#the-council-of-critics)
+4. [Domain Configuration](#domain-configuration)
+5. [IBE Selection Criteria](#ibe-selection-criteria)
+6. [Output Formats](#output-formats)
+7. [Best Practices](#best-practices)
 
----
-
-## Philosophy: Why Abduction?
-
-Charles Sanders Peirce (1839-1914) identified three fundamental modes of logical inference:
-
-| Mode | Direction | Question Answered | Example |
-|------|-----------|-------------------|---------|
-| **Deduction** | General → Specific | What follows from this? | "All humans are mortal; Socrates is human; therefore Socrates is mortal" |
-| **Induction** | Specific → General | What pattern do we see? | "These 1000 ravens are black; probably all ravens are black" |
-| **Abduction** | Effect → Cause | What explains this? | "The grass is wet; probably it rained" |
-
-**Abduction is the only logical operation that introduces new ideas.** It's how we handle *surprise*—when reality doesn't match expectations.
-
-### When Standard LLMs Fail
-
-Standard LLMs optimize for probability—they retrieve the most likely "normal" answer. When faced with anomalous data, they:
-
-1. **Hallucinate normalcy**: Force-fit conventional explanations
-2. **Refuse uncertainty**: Produce vague, non-committal responses  
-3. **Miss the signal**: Treat the anomaly as noise
-
-Peircean Abduction forces models to:
-
-1. **Recognize surprise**: Explicitly identify what's anomalous
-2. **Generate alternatives**: Produce multiple competing hypotheses
-3. **Evaluate systematically**: Score hypotheses on objective criteria
-4. **Commit with calibration**: Select with appropriate confidence
-
----
-
-## The Three Phases
-
-### Phase 1: Observation Analysis
-
-The first step is identifying and characterizing the surprising fact.
-
-```
-INPUT: "NVIDIA stock dropped 8% on record earnings"
-
-ANALYSIS:
-- Fact: 8% price drop concurrent with positive earnings
-- Expected: Price increase on earnings beat
-- Surprise Level: High (0.85)
-- Source of Surprise: Violates strong positive correlation between earnings and price
-```
-
-The surprise score (0.0-1.0) quantifies how anomalous the observation is:
-- 0.0-0.3: Expected (probably not worth abductive analysis)
-- 0.3-0.6: Mildly surprising
-- 0.6-0.8: Surprising (good candidate for abduction)
-- 0.8-1.0: Highly anomalous (definitely needs explanation)
-
-### Phase 2: Hypothesis Generation (Retroduction)
-
-Generate multiple explanatory hypotheses, each with:
-- **Statement**: Clear, falsifiable claim
-- **Explanation**: How it makes the observation "a matter of course"
-- **Prior Probability**: Likelihood before considering this observation
-- **Assumptions**: What must be true for this hypothesis to hold
-- **Testable Predictions**: Observable consequences if true/false
-
-```
-HYPOTHESES:
-
-H1: Expectations were higher than reported beat
-    Prior: 0.35
-    Explanation: Whisper numbers exceeded the 15% beat
-    Assumptions: Efficient market hypothesis, whisper numbers exist
-    Test: Check options flow and analyst whisper numbers
-
-H2: Forward guidance disappointed
-    Prior: 0.30
-    Explanation: Next quarter outlook was below consensus
-    Test: Compare guidance to consensus estimates
-
-H3: Unrelated institutional selling
-    Prior: 0.20
-    Explanation: Index rebalancing forced sales
-    Test: Check index changes and fund flows
-```
-
-### Phase 3: Selection (Inference to the Best Explanation)
-
-Evaluate each hypothesis on IBE criteria and select the best explanation:
-
-```
-EVALUATION:
-
-              | Scope | Power | Parsimony | Testability | Composite
---------------|-------|-------|-----------|-------------|----------
-H1: Whispers  | 0.85  | 0.80  | 0.75      | 0.70        | 0.78
-H2: Guidance  | 0.90  | 0.85  | 0.80      | 0.85        | 0.85
-H3: Rebalance | 0.60  | 0.65  | 0.90      | 0.80        | 0.74
-
-SELECTED: H2 (Forward guidance disappointed)
-Confidence: 0.85
-```
+> For the philosophical foundation and theory, see [Abductive Reasoning Concepts](../concepts/abductive-reasoning.md).
 
 ---
 
@@ -355,13 +256,13 @@ print(json.dumps(result.to_json_trace(), indent=2))
 
 ### 1. Recognize When to Use Abduction
 
-✅ **Good candidates**:
+**Good candidates**:
 - Anomalous data (out of distribution)
 - Root cause analysis
 - Diagnostic reasoning
 - Edge cases
 
-❌ **Not suited for**:
+**Not suited for**:
 - Standard Q&A
 - Creative writing
 - Fact retrieval

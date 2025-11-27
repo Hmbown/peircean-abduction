@@ -1,6 +1,6 @@
 # MCP Integration Guide
 
-A **Logic Harness** for abductive inference. Anomaly in → Hypothesis out.
+A **Logic Harness** for abductive inference. Anomaly in -> Hypothesis out.
 
 ## Quick Reference
 
@@ -8,7 +8,7 @@ A **Logic Harness** for abductive inference. Anomaly in → Hypothesis out.
 |--------|---------|
 | Claude Desktop | `peircean-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"` |
 | Claude Code | `claude mcp add peircean -- python -m peircean.mcp.server` |
-| Cursor | Settings → Features → MCP → paste config |
+| Cursor | Settings -> Features -> MCP -> paste config |
 | VS Code | MCP extension settings |
 
 ---
@@ -74,7 +74,7 @@ You should see `peircean` in the output. Restart your terminal.
 
 1. Run `peircean-setup-mcp` (without `--write`) to get the JSON config
 2. Copy the JSON output
-3. Open **Settings → Features → MCP**
+3. Open **Settings -> Features -> MCP**
 4. Paste the configuration
 5. Restart Cursor
 
@@ -326,11 +326,11 @@ trading volume spiked 500% with no news"
 ### Step-by-Step Workflow
 
 1. Call `peircean_observe_anomaly` with your observation
-2. Execute returned prompt → get `anomaly` JSON
+2. Execute returned prompt -> get `anomaly` JSON
 3. Call `peircean_generate_hypotheses` with anomaly JSON
-4. Execute returned prompt → get `hypotheses` JSON
+4. Execute returned prompt -> get `hypotheses` JSON
 5. Call `peircean_evaluate_via_ibe` with both JSONs
-6. Execute returned prompt → get `evaluation` with best hypothesis
+6. Execute returned prompt -> get `evaluation` with best hypothesis
 
 ### With Council of Critics
 
@@ -401,23 +401,23 @@ All 10 tests should pass:
 
 ```
 MCP Client (Claude Desktop, Cursor, etc.)
-     │
-     │ calls tool
-     ▼
-┌──────────────────────────────────────────────┐
-│  Peircean MCP Server (FastMCP)               │
-│                                              │
-│  peircean_observe_anomaly → prompt           │
-│  peircean_generate_hypotheses → prompt       │
-│  peircean_evaluate_via_ibe → prompt          │
-└──────────────────────────────────────────────┘
-     │
-     │ returns prompt (JSON)
-     ▼
+     |
+     | calls tool
+     v
++----------------------------------------------+
+|  Peircean MCP Server (FastMCP)               |
+|                                              |
+|  peircean_observe_anomaly -> prompt          |
+|  peircean_generate_hypotheses -> prompt      |
+|  peircean_evaluate_via_ibe -> prompt         |
++----------------------------------------------+
+     |
+     | returns prompt (JSON)
+     v
 MCP Client executes prompt with LLM
-     │
-     │ LLM generates JSON response
-     ▼
+     |
+     | LLM generates JSON response
+     v
 Structured hypothesis with next steps
 ```
 
@@ -429,8 +429,8 @@ Structured hypothesis with next steps
 
 Peircean generates prompts. Your MCP client's model runs them.
 
-- Claude Desktop → uses your Claude subscription
-- Cursor → uses your configured model
-- VS Code → uses your MCP extension's model
+- Claude Desktop -> uses your Claude subscription
+- Cursor -> uses your configured model
+- VS Code -> uses your MCP extension's model
 
 The server itself requires no API keys or external calls.

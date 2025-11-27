@@ -122,7 +122,7 @@ Open a discussion or reach out to the maintainers.
 
 ## Code of Conduct
 
-Be respectful, inclusive, and constructive. We're all here to learn and build something useful.
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md). Be respectful, inclusive, and constructive. We're all here to learn and build something useful.
 
 ## License
 

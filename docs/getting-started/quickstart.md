@@ -147,7 +147,6 @@ print(json.dumps(result.to_json_trace(), indent=2))
 
 ## Next Steps
 
-- [User Guide](USER_GUIDE.md) - Complete documentation
-- [MCP Reference](MCP.md) - MCP server details
-- [Domain Templates](DOMAINS.md) - Domain-specific guidance
-- [API Reference](API.md) - Full API documentation
+- [User Guide](../guides/user-guide.md) - Complete documentation
+- [MCP Reference](../guides/mcp-integration.md) - MCP server details
+- [Abductive Reasoning Concepts](../concepts/abductive-reasoning.md) - Philosophy and theory

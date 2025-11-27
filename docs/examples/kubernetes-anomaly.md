@@ -17,7 +17,7 @@ Query: "Our Kubernetes cluster CPU usage dropped 40% but response latency increa
   "fact": "CPU usage dropped 40% while response latency increased 200%",
   "surprise_level": "anomalous",
   "surprise_score": 0.92,
-  "expected_state": "CPU and latency should correlate positively (more load → higher latency)",
+  "expected_state": "CPU and latency should correlate positively (more load -> higher latency)",
   "surprise_source": "Negative correlation between CPU and latency violates fundamental performance expectations"
 }
 ```
@@ -149,7 +149,7 @@ Query: "Our Kubernetes cluster CPU usage dropped 40% but response latency increa
 
 **Composite Score**: 0.87
 
-**Rationale**: 
+**Rationale**:
 This hypothesis best explains the paradoxical observation because:
 
 1. **Explanatory Scope (0.95)**: It explains both phenomena—low CPU (fewer pods) AND high latency (remaining pods overloaded)—in a single coherent mechanism.
