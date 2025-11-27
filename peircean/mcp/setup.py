@@ -17,6 +17,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Any
+from collections.abc import Callable
 
 
 def get_default_config_path() -> Path:
@@ -55,7 +56,12 @@ def merge_configs(existing: dict[str, Any], new: dict[str, Any]) -> dict[str, An
     return result
 
 
-def setup_mcp(config_path: Path | None = None, write: bool = False, backup: bool = True) -> str:
+def setup_mcp(
+    config_path: Path | None = None,
+    write: bool = False,
+    backup: bool = True,
+    _get_path: Callable[[], Path] = get_default_config_path,
+) -> str:
     """
     Setup MCP configuration.
 
@@ -63,11 +69,12 @@ def setup_mcp(config_path: Path | None = None, write: bool = False, backup: bool
         config_path: Path to config file (None for default)
         write: Actually write the file (False = dry run)
         backup: Create backup before modifying
+        _get_path: Function to get default path (dependency injection for tests)
 
     Returns:
         The configuration JSON string
     """
-    path = config_path or get_default_config_path()
+    path = config_path or _get_path()
     new_config = get_mcp_config()
 
     # Check for existing config
@@ -99,7 +106,10 @@ def setup_mcp(config_path: Path | None = None, write: bool = False, backup: bool
     return config_json
 
 
-def main() -> None:
+def main(
+    args_list: list[str] | None = None,
+    _get_path: Callable[[], Path] = get_default_config_path,
+) -> None:
     """CLI entry point."""
     parser = argparse.ArgumentParser(
         description="Setup Peircean Abduction MCP server configuration"
@@ -116,18 +126,26 @@ def main() -> None:
     )
     parser.add_argument("--json", action="store_true", help="Output just the JSON config")
 
-    args = parser.parse_args()
+    if args_list is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args_list)
 
     # Determine config path
     if args.write == "default":
-        config_path = get_default_config_path()
+        config_path = _get_path()
     elif args.write:
         config_path = Path(args.write)
     else:
         config_path = None
 
     # Run setup
-    config = setup_mcp(config_path=config_path, write=bool(args.write), backup=not args.no_backup)
+    config = setup_mcp(
+        config_path=config_path,
+        write=bool(args.write),
+        backup=not args.no_backup,
+        _get_path=_get_path,
+    )
 
     # Output
     if args.json or not args.write:
@@ -135,7 +153,7 @@ def main() -> None:
 
     if not args.write:
         print("\n# To apply this configuration, run:")
-        print(f"#   peircean-setup-mcp --write {get_default_config_path()}")
+        print(f"#   peircean-setup-mcp --write {_get_path()}")
 
 
 # Expose helper for tests

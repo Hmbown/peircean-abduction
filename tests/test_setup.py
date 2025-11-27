@@ -5,7 +5,7 @@ Tests for Peircean MCP Setup Utility.
 import json
 import sys
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from peircean.mcp.setup import (
     get_default_config_path,
@@ -166,19 +166,18 @@ class TestSetupMcp:
         assert not backup_path.exists()
 
     def test_default_path_used_when_none(self):
-        with patch("peircean.mcp.setup.get_default_config_path") as mock_path:
-            mock_path.return_value = Path("/fake/path/config.json")
-            # Dry run so we don't actually write
-            setup_mcp(config_path=None, write=False)
-            mock_path.assert_called_once()
+        mock_path = MagicMock()
+        mock_path.return_value = Path("/fake/path/config.json")
+        # Dry run so we don't actually write
+        setup_mcp(config_path=None, write=False, _get_path=mock_path)
+        mock_path.assert_called_once()
 
 
 class TestMain:
     """Test CLI entry point."""
 
     def test_dry_run_output(self, capsys):
-        with patch.object(sys, "argv", ["peircean-setup-mcp"]):
-            main()
+        main(args_list=[])
 
         captured = capsys.readouterr()
         # Should output JSON config
@@ -187,8 +186,7 @@ class TestMain:
         assert "peircean-setup-mcp --write" in captured.out
 
     def test_json_flag(self, capsys):
-        with patch.object(sys, "argv", ["peircean-setup-mcp", "--json"]):
-            main()
+        main(args_list=["--json"])
 
         captured = capsys.readouterr()
         # With --json flag (but no --write), output includes JSON and help text
@@ -203,10 +201,9 @@ class TestMain:
 
     def test_write_to_default_location(self, tmp_path: Path, capsys):
         config_path = tmp_path / "claude" / "config.json"
+        mock_path = MagicMock(return_value=config_path)
 
-        with patch("peircean.mcp.setup.get_default_config_path", return_value=config_path):
-            with patch.object(sys, "argv", ["peircean-setup-mcp", "--write"]):
-                main()
+        main(args_list=["--write"], _get_path=mock_path)
 
         assert config_path.exists()
         captured = capsys.readouterr()
@@ -215,8 +212,7 @@ class TestMain:
     def test_write_to_custom_path(self, tmp_path: Path, capsys):
         config_path = tmp_path / "custom_config.json"
 
-        with patch.object(sys, "argv", ["peircean-setup-mcp", "--write", str(config_path)]):
-            main()
+        main(args_list=["--write", str(config_path)])
 
         assert config_path.exists()
         captured = capsys.readouterr()
@@ -227,10 +223,7 @@ class TestMain:
         with open(config_path, "w") as f:
             json.dump({"existing": True}, f)
 
-        with patch.object(
-            sys, "argv", ["peircean-setup-mcp", "--write", str(config_path), "--no-backup"]
-        ):
-            main()
+        main(args_list=["--write", str(config_path), "--no-backup"])
 
         backup_path = config_path.with_suffix(".json.bak")
         assert not backup_path.exists()
@@ -238,10 +231,7 @@ class TestMain:
     def test_write_with_json_flag(self, tmp_path: Path, capsys):
         config_path = tmp_path / "config.json"
 
-        with patch.object(
-            sys, "argv", ["peircean-setup-mcp", "--write", str(config_path), "--json"]
-        ):
-            main()
+        main(args_list=["--write", str(config_path), "--json"])
 
         # With --json and --write, should still output JSON
         captured = capsys.readouterr()
