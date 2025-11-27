@@ -247,14 +247,14 @@ class TestJSONOutput:
 def mock_llm():
     """Mock LLM that returns valid JSON responses."""
     def _mock(prompt: str) -> str:
-        if "observation" in prompt.lower() and "surprising" in prompt.lower():
+        if "analyzing an observation" in prompt.lower():
             return json.dumps({
                 "surprise_level": "high",
                 "surprise_score": 0.8,
                 "expected_state": "Normal behavior",
                 "surprise_source": "Violates expectations"
             })
-        elif "hypothes" in prompt.lower():
+        elif "generating explanatory hypotheses" in prompt.lower():
             return json.dumps({
                 "hypotheses": [
                     {
@@ -267,7 +267,7 @@ def mock_llm():
                     }
                 ]
             })
-        elif "evaluat" in prompt.lower():
+        elif "evaluating hypotheses" in prompt.lower():
             return json.dumps({
                 "evaluations": [
                     {
@@ -284,7 +284,7 @@ def mock_llm():
                     }
                 ]
             })
-        elif "select" in prompt.lower():
+        elif "selecting the best explanation" in prompt.lower():
             return json.dumps({
                 "selected_hypothesis": "H1",
                 "selection_rationale": "Best overall score",
