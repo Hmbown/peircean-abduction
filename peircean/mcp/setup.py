@@ -138,5 +138,9 @@ def main() -> None:
         print(f"#   peircean-setup-mcp --write {get_default_config_path()}")
 
 
+# Expose helper for tests
+main.get_default_config_path = get_default_config_path  # type: ignore
+
+
 if __name__ == "__main__":
     main()

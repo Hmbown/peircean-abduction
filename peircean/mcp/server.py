@@ -20,8 +20,8 @@ import json
 import logging
 import sys
 
-from mcp.server.fastmcp import FastMCP
-from mcp.types import ToolAnnotations
+from .fastmcp import FastMCP
+from .types import ToolAnnotations
 
 # =============================================================================
 # CRITICAL: Logging to stderr ONLY (stdout is reserved for MCP protocol)
