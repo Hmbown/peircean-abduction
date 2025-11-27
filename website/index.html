@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peircean - A Logic Harness for Abductive Inference</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">PEIRCEAN</div>
+        <nav class="header-nav">
+            <a href="https://github.com/Hmbown/peircean-abduction" target="_blank">[GITHUB]</a>
+            <a href="#docs">[DOCS]</a>
+            <a href="#tools">[TOOLS]</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-left">
+                <span class="version-badge">V0.1.0 PUBLIC BETA</span>
+                <h1 class="hero-title">
+                    The Surprising<br>
+                    Fact is Observed.
+                </h1>
+                <p class="hero-tagline">
+                    A Logic Harness for abductive inference.<br>
+                    Anomaly in → Hypothesis out.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#quickstart" class="btn btn-primary">GET STARTED</a>
+                    <a href="https://github.com/Hmbown/peircean-abduction" class="btn btn-secondary" target="_blank">VIEW ON GITHUB</a>
+                </div>
+            </div>
+            <div class="hero-divider"></div>
+            <div class="hero-right">
+                <div class="hero-graphic">
+                    <svg viewBox="0 0 300 300" class="abduction-logo">
+                        <!-- Outer rotating squares -->
+                        <rect x="50" y="50" width="200" height="200" fill="none" stroke="#1a1a1a" stroke-width="1.5" transform="rotate(0 150 150)"/>
+                        <rect x="50" y="50" width="200" height="200" fill="none" stroke="#1a1a1a" stroke-width="1.5" transform="rotate(15 150 150)"/>
+                        <rect x="50" y="50" width="200" height="200" fill="none" stroke="#1a1a1a" stroke-width="1.5" transform="rotate(30 150 150)"/>
+                        <rect x="50" y="50" width="200" height="200" fill="none" stroke="#1a1a1a" stroke-width="1.5" transform="rotate(45 150 150)"/>
+                        <!-- Inner circle representing the abductive loop -->
+                        <circle cx="150" cy="150" r="60" fill="#e8e8e3" stroke="#1a1a1a" stroke-width="2"/>
+                        <!-- Question mark / C symbol in center -->
+                        <text x="150" y="165" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="48" font-weight="500" fill="#1a1a1a">C</text>
+                        <!-- Arrow pointing inward (hypothesis generation) -->
+                        <path d="M 150 70 L 150 90" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 230 150 L 210 150" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 150 230 L 150 210" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#1a1a1a"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="section-header">
+            <span class="section-label">THE PROCESS</span>
+            <h2 class="section-title">Observe. Hypothesize. Evaluate.</h2>
+        </div>
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-box">
+                    <span class="step-label">OBSERVE</span>
+                </div>
+                <p class="step-description">Register the surprising fact (C).</p>
+            </div>
+            <div class="process-arrow">→</div>
+            <div class="process-step">
+                <div class="step-box step-box-outline">
+                    <span class="step-label">HYPO-</span>
+                </div>
+                <p class="step-description">Generate candidate explanations (A).</p>
+            </div>
+            <div class="process-arrow">→</div>
+            <div class="process-step">
+                <div class="step-box step-box-filled">
+                    <span class="step-label">EVAL-</span>
+                </div>
+                <p class="step-description">Inference to best explanation.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Peirce Quote Section -->
+    <section class="quote-section">
+        <blockquote class="peirce-quote">
+            "The surprising fact, C, is observed.<br>
+            But if A were true, C would be a matter of course.<br>
+            Hence, there is reason to suspect that A is true."
+        </blockquote>
+        <cite class="quote-cite">— Charles Sanders Peirce, Collected Papers 5.189</cite>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools" id="tools">
+        <div class="section-header">
+            <span class="section-label">THE TOOLS</span>
+            <h2 class="section-title">Three Phases. Five Critics.</h2>
+        </div>
+        <div class="tools-grid">
+            <div class="tool-card">
+                <div class="tool-phase">PHASE 1</div>
+                <h3 class="tool-name">observe_anomaly</h3>
+                <p class="tool-desc">Register the surprising fact. Analyze what makes it surprising and why it violates expectations.</p>
+                <code class="tool-output">→ anomaly JSON</code>
+            </div>
+            <div class="tool-card">
+                <div class="tool-phase">PHASE 2</div>
+                <h3 class="tool-name">generate_hypotheses</h3>
+                <p class="tool-desc">Generate diverse, testable explanations. Each hypothesis must make C "a matter of course."</p>
+                <code class="tool-output">→ hypotheses JSON</code>
+            </div>
+            <div class="tool-card">
+                <div class="tool-phase">PHASE 3</div>
+                <h3 class="tool-name">evaluate_via_ibe</h3>
+                <p class="tool-desc">Select the best explanation using IBE criteria: explanatory power, parsimony, testability.</p>
+                <code class="tool-output">→ evaluation JSON</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- Council Section -->
+    <section class="council">
+        <div class="section-header">
+            <span class="section-label">THE COUNCIL</span>
+            <h2 class="section-title">Five Critics. One Verdict.</h2>
+        </div>
+        <div class="critics-grid">
+            <div class="critic-card">
+                <div class="critic-icon">E</div>
+                <h4 class="critic-name">Empiricist</h4>
+                <p class="critic-focus">Evidence & testability</p>
+            </div>
+            <div class="critic-card">
+                <div class="critic-icon">L</div>
+                <h4 class="critic-name">Logician</h4>
+                <p class="critic-focus">Consistency & parsimony</p>
+            </div>
+            <div class="critic-card">
+                <div class="critic-icon">P</div>
+                <h4 class="critic-name">Pragmatist</h4>
+                <p class="critic-focus">Actionability</p>
+            </div>
+            <div class="critic-card">
+                <div class="critic-icon">$</div>
+                <h4 class="critic-name">Economist</h4>
+                <p class="critic-focus">Cost-benefit</p>
+            </div>
+            <div class="critic-card">
+                <div class="critic-icon">?</div>
+                <h4 class="critic-name">Skeptic</h4>
+                <p class="critic-focus">Falsification</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quickstart Section -->
+    <section class="quickstart" id="quickstart">
+        <div class="section-header">
+            <span class="section-label">QUICKSTART</span>
+            <h2 class="section-title">Up and Running in 60 Seconds.</h2>
+        </div>
+        <div class="quickstart-content">
+            <div class="install-step">
+                <span class="step-number">01</span>
+                <div class="step-content">
+                    <h4>Install</h4>
+                    <pre><code>pip install peircean-abduction</code></pre>
+                </div>
+            </div>
+            <div class="install-step">
+                <span class="step-number">02</span>
+                <div class="step-content">
+                    <h4>Configure MCP</h4>
+                    <pre><code># Claude Code
+claude mcp add peircean -- python -m peircean.mcp.server
+
+# Claude Desktop
+peircean-setup-mcp --write</code></pre>
+                </div>
+            </div>
+            <div class="install-step">
+                <span class="step-number">03</span>
+                <div class="step-content">
+                    <h4>Use It</h4>
+                    <pre><code>"Use Peircean abduction to analyze why our
+database queries are suddenly 3x slower
+despite no code changes"</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Docs Section -->
+    <section class="docs" id="docs">
+        <div class="section-header">
+            <span class="section-label">DOCUMENTATION</span>
+            <h2 class="section-title">Learn More.</h2>
+        </div>
+        <div class="docs-grid">
+            <a href="https://github.com/Hmbown/peircean-abduction/blob/main/README.md" class="doc-link" target="_blank">
+                <span class="doc-title">README</span>
+                <span class="doc-arrow">→</span>
+            </a>
+            <a href="https://github.com/Hmbown/peircean-abduction/blob/main/docs/MCP.md" class="doc-link" target="_blank">
+                <span class="doc-title">MCP Integration Guide</span>
+                <span class="doc-arrow">→</span>
+            </a>
+            <a href="https://github.com/Hmbown/peircean-abduction/blob/main/docs/QUICKSTART.md" class="doc-link" target="_blank">
+                <span class="doc-title">Quick Start</span>
+                <span class="doc-arrow">→</span>
+            </a>
+            <a href="https://github.com/Hmbown/peircean-abduction/blob/main/docs/USER_GUIDE.md" class="doc-link" target="_blank">
+                <span class="doc-title">User Guide</span>
+                <span class="doc-arrow">→</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="footer-logo">PEIRCEAN</span>
+                <p class="footer-tagline">A Logic Harness for abductive inference.</p>
+            </div>
+            <div class="footer-right">
+                <p class="footer-credit">
+                    Inspired by <a href="https://hegelion-web.pages.dev/" target="_blank">Hegelion</a>
+                </p>
+                <p class="footer-quote">
+                    "Abduction is the only logical operation which introduces any new idea."<br>
+                    — C.S. Peirce, CP 5.172
+                </p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>MIT License</span>
+            <span>•</span>
+            <a href="https://github.com/Hmbown/peircean-abduction" target="_blank">GitHub</a>
+        </div>
+    </footer>
+</body>
+</html>

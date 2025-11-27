@@ -1,0 +1,689 @@
+/* ============================================
+   PEIRCEAN - A Logic Harness for Abductive Inference
+   Aesthetic inspired by Hegelion
+   ============================================ */
+
+/* CSS Variables */
+:root {
+    --bg-primary: #f5f5f0;
+    --bg-secondary: #e8e8e3;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --accent: #1a1a1a;
+    --border: #1a1a1a;
+
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 2rem;
+    --space-lg: 4rem;
+    --space-xl: 8rem;
+}
+
+/* Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.1;
+}
+
+a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+a:hover {
+    opacity: 0.7;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--bg-primary);
+}
+
+.header-logo {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+}
+
+.header-nav {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.header-nav a {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: var(--space-xl) var(--space-lg);
+    padding-top: calc(var(--space-xl) + 60px);
+    background-color: var(--bg-secondary);
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: var(--space-lg);
+}
+
+.hero-left {
+    flex: 1;
+    max-width: 600px;
+}
+
+.version-badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-md);
+}
+
+.hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
+}
+
+.hero-tagline {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--border);
+}
+
+.hero-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.hero-divider {
+    width: 1px;
+    height: 400px;
+    border-left: 1px dashed var(--border);
+    opacity: 0.5;
+}
+
+.hero-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-graphic {
+    width: 100%;
+    max-width: 350px;
+}
+
+.abduction-logo {
+    width: 100%;
+    height: auto;
+}
+
+/* ============================================
+   PROCESS SECTION
+   ============================================ */
+
+.process {
+    padding: var(--space-xl) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.section-header {
+    max-width: 1200px;
+    margin: 0 auto var(--space-lg);
+}
+
+.section-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.section-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-style: italic;
+}
+
+.process-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    max-width: 1000px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.process-step {
+    text-align: center;
+}
+
+.step-box {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-sm);
+    transition: all 0.3s ease;
+}
+
+.step-box:hover {
+    transform: scale(1.05);
+}
+
+.step-box-outline {
+    background-color: transparent;
+}
+
+.step-box-filled {
+    background-color: var(--accent);
+}
+
+.step-box-filled .step-label {
+    color: var(--bg-primary);
+}
+
+.step-label {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+}
+
+.step-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 150px;
+}
+
+.process-arrow {
+    font-size: 24px;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   QUOTE SECTION
+   ============================================ */
+
+.quote-section {
+    padding: var(--space-xl) var(--space-lg);
+    background-color: var(--bg-secondary);
+    text-align: center;
+}
+
+.peirce-quote {
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-style: italic;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto var(--space-md);
+}
+
+.quote-cite {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   TOOLS SECTION
+   ============================================ */
+
+.tools {
+    padding: var(--space-xl) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-md);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tool-card {
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+    background-color: var(--bg-secondary);
+    transform: translateY(-2px);
+}
+
+.tool-phase {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.tool-name {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: var(--space-sm);
+}
+
+.tool-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.tool-output {
+    font-size: 12px;
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    display: inline-block;
+}
+
+/* ============================================
+   COUNCIL SECTION
+   ============================================ */
+
+.council {
+    padding: var(--space-xl) var(--space-lg);
+    background-color: var(--bg-secondary);
+}
+
+.critics-grid {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    max-width: 1000px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.critic-card {
+    text-align: center;
+    padding: var(--space-md);
+    min-width: 140px;
+}
+
+.critic-icon {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-sm);
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-style: italic;
+    transition: all 0.3s ease;
+}
+
+.critic-card:hover .critic-icon {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.critic-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: var(--space-xs);
+}
+
+.critic-focus {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* ============================================
+   QUICKSTART SECTION
+   ============================================ */
+
+.quickstart {
+    padding: var(--space-xl) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.quickstart-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.install-step {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    align-items: flex-start;
+}
+
+.step-number {
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 30px;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content h4 {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: var(--space-sm);
+}
+
+.step-content pre {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+    padding: var(--space-md);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.step-content code {
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   DOCS SECTION
+   ============================================ */
+
+.docs {
+    padding: var(--space-xl) var(--space-lg);
+    background-color: var(--bg-secondary);
+}
+
+.docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-sm);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.doc-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    background-color: var(--bg-primary);
+    transition: all 0.2s ease;
+}
+
+.doc-link:hover {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.doc-title {
+    font-size: 14px;
+}
+
+.doc-arrow {
+    font-size: 18px;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto var(--space-lg);
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.footer-logo {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.footer-tagline {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.footer-right {
+    text-align: right;
+}
+
+.footer-credit {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.footer-credit a {
+    text-decoration: underline;
+}
+
+.footer-quote {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-secondary);
+    max-width: 400px;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-left {
+        max-width: 100%;
+    }
+
+    .hero-tagline {
+        border-left: none;
+        padding-left: 0;
+        border-top: 2px solid var(--border);
+        padding-top: var(--space-md);
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-divider {
+        width: 100px;
+        height: 1px;
+        border-left: none;
+        border-top: 1px dashed var(--border);
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-right {
+        text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --space-lg: 2rem;
+        --space-xl: 4rem;
+    }
+
+    .header {
+        padding: var(--space-sm);
+    }
+
+    .header-nav {
+        gap: var(--space-sm);
+    }
+
+    .process-steps {
+        flex-direction: column;
+    }
+
+    .process-arrow {
+        transform: rotate(90deg);
+    }
+
+    .critics-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-left,
+.hero-right,
+.section-header,
+.process-steps,
+.tools-grid,
+.critics-grid {
+    animation: fadeIn 0.8s ease-out;
+}

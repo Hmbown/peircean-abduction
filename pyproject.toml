@@ -1,0 +1,123 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "peircean-abduction"
+version = "0.1.0"
+description = "A Logic Harness for abductive inference. Anomaly in → Hypothesis out."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
+]
+keywords = [
+    "llm",
+    "abduction",
+    "reasoning",
+    "peirce",
+    "inference",
+    "anomaly-detection",
+    "explanation",
+    "mcp",
+    "ai-agents"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "pydantic>=2.0",
+    "httpx>=0.24",
+    "tenacity>=8.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.18"]
+openai = ["openai>=1.0"]
+mcp = ["mcp>=1.0.0"]
+all = [
+    "anthropic>=0.18",
+    "openai>=1.0",
+    "mcp>=1.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+
+[project.scripts]
+peircean = "peircean.cli:main"
+peircean-server = "peircean.mcp.server:main"
+peircean-setup-mcp = "peircean.mcp.setup:main"
+peircean-bench = "peircean.benchmarks.runner:main"
+
+[project.urls]
+Homepage = "https://github.com/Hmbown/peircean-abduction"
+Documentation = "https://github.com/Hmbown/peircean-abduction/tree/main/docs"
+Repository = "https://github.com/Hmbown/peircean-abduction"
+Issues = "https://github.com/Hmbown/peircean-abduction/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["peircean"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["peircean"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --cov=peircean --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["peircean"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
