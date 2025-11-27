@@ -5,7 +5,7 @@ import sys
 # Add the project root to the python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from peircean.mcp.server import generate_hypotheses
+from peircean.mcp.server import peircean_generate_hypotheses
 
 # Simulated output from Phase 1
 anomaly_json = json.dumps(
@@ -32,7 +32,7 @@ anomaly_json = json.dumps(
     }
 )
 
-output = generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
+output = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
 
 data = json.loads(output)
 print(data["prompt"])

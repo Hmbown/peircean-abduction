@@ -5,7 +5,7 @@ import sys
 # Add the project root to the python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from peircean.mcp.server import evaluate_via_ibe
+from peircean.mcp.server import peircean_evaluate_via_ibe
 
 # Simulated output from Phase 1
 anomaly_json = json.dumps(
@@ -101,8 +101,8 @@ hypotheses_json = json.dumps(
 # We use the specialists nominated in Phase 1
 custom_council = ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
 
-print(f"\n[INFO] Calling evaluate_via_ibe with custom council: {custom_council}...")
-prompt = evaluate_via_ibe(
+print(f"\n[INFO] Calling peircean_evaluate_via_ibe with custom council: {custom_council}...")
+prompt = peircean_evaluate_via_ibe(
     anomaly_json=anomaly_json, hypotheses_json=hypotheses_json, custom_council=custom_council
 )
 

@@ -25,18 +25,18 @@ C (Surprising Fact) → A (Hypothesis) → "If A, then C would be expected"
 
 | Phase | Tool | Peirce's Schema |
 |-------|------|-----------------|
-| 1. Observation | `observe_anomaly` | "The surprising fact, C, is observed" |
-| 2. Hypothesis | `generate_hypotheses` | "But if A were true, C would be a matter of course" |
-| 3. Selection | `evaluate_via_ibe` | "Hence, there is reason to suspect that A is true" |
+| 1. Observation | `peircean_observe_anomaly` | "The surprising fact, C, is observed" |
+| 2. Hypothesis | `peircean_generate_hypotheses` | "But if A were true, C would be a matter of course" |
+| 3. Selection | `peircean_evaluate_via_ibe` | "Hence, there is reason to suspect that A is true" |
 
 ## The 3 Core Tools
 
-### 1. `observe_anomaly`
+### 1. `peircean_observe_anomaly`
 
 **Phase 1**: Register the surprising fact (C).
 
 ```python
-observe_anomaly(
+peircean_observe_anomaly(
     observation="Server latency spiked 10x but CPU/memory normal",
     context="No recent deployments, traffic is steady",
     domain="technical"
@@ -59,12 +59,12 @@ observe_anomaly(
 }
 ```
 
-### 2. `generate_hypotheses`
+### 2. `peircean_generate_hypotheses`
 
 **Phase 2**: Generate candidate explanations (A's) that would make C expected.
 
 ```python
-generate_hypotheses(
+peircean_generate_hypotheses(
     anomaly_json='{"anomaly": {...}}',  # Output from Phase 1
     num_hypotheses=5
 )
@@ -95,12 +95,12 @@ generate_hypotheses(
 }
 ```
 
-### 3. `evaluate_via_ibe`
+### 3. `peircean_evaluate_via_ibe`
 
 **Phase 3**: Inference to Best Explanation selection.
 
 ```python
-evaluate_via_ibe(
+peircean_evaluate_via_ibe(
     anomaly_json='{"anomaly": {...}}',      # Output from Phase 1
     hypotheses_json='{"hypotheses": [...]}',  # Output from Phase 2
     use_council=True  # Optional: include Council of Critics
@@ -149,7 +149,7 @@ When `use_council=True`, hypotheses are evaluated from 5 perspectives:
 You can also consult critics individually:
 
 ```python
-critic_evaluate(
+peircean_critic_evaluate(
     critic="skeptic",
     anomaly_json='{"anomaly": {...}}',
     hypotheses_json='{"hypotheses": [...]}'
@@ -323,7 +323,7 @@ python verify_peircean.py
 For quick analysis without intermediate results:
 
 ```python
-abduce_single_shot(
+peircean_abduce_single_shot(
     observation="Customer churn rate doubled in Q3",
     context="No price changes, NPS stable, no competitor launches",
     domain="financial",
@@ -388,19 +388,19 @@ The Peircean Logic Harness forces explicit hypothesis generation and evaluation.
 User / Agent
      │
      ▼
-┌─────────────────────────────────────┐
-│  Peircean Logic Harness (MCP)       │
-│                                     │
-│  observe_anomaly (Phase 1)          │
-│         │                           │
-│         ▼                           │
-│  generate_hypotheses (Phase 2)      │
-│         │                           │
-│         ▼                           │
-│  evaluate_via_ibe (Phase 3)         │
-│         │                           │
-│    [Council of Critics]             │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  Peircean Logic Harness (MCP)           │
+│                                         │
+│  peircean_observe_anomaly (Phase 1)     │
+│         │                               │
+│         ▼                               │
+│  peircean_generate_hypotheses (Phase 2) │
+│         │                               │
+│         ▼                               │
+│  peircean_evaluate_via_ibe (Phase 3)    │
+│         │                               │
+│    [Council of Critics]                 │
+└─────────────────────────────────────────┘
      │
      ▼
 LLM Provider (Claude, GPT, etc.)

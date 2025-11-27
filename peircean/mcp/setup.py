@@ -99,7 +99,7 @@ def setup_mcp(config_path: Path | None = None, write: bool = False, backup: bool
     return config_json
 
 
-def main():
+def main() -> None:
     """CLI entry point."""
     parser = argparse.ArgumentParser(
         description="Setup Peircean Abduction MCP server configuration"

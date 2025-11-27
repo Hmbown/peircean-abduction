@@ -21,6 +21,7 @@ import logging
 import sys
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 # =============================================================================
 # CRITICAL: Logging to stderr ONLY (stdout is reserved for MCP protocol)
@@ -63,15 +64,28 @@ VIOLATION = TERMINATION."""
 
 
 # =============================================================================
+# ERROR RESPONSE HELPER
+# =============================================================================
+def error_response(error: str, hint: str | None = None) -> str:
+    """Standardized error response format for all tools."""
+    response: dict[str, str] = {"type": "error", "error": error}
+    if hint:
+        response["hint"] = hint
+    return json.dumps(response, indent=2)
+
+
+# =============================================================================
 # TOOL 1: OBSERVE ANOMALY (Phase 1 - Register C)
 # =============================================================================
-@mcp.tool()
-def observe_anomaly(observation: str, context: str | None = None, domain: str = "general") -> str:
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True))
+def peircean_observe_anomaly(
+    observation: str, context: str | None = None, domain: str = "general"
+) -> str:
     """
     PHASE 1: Register the surprising fact (C).
 
     This is the FIRST tool in the 3-phase Peircean abductive loop:
-    1. observe_anomaly → 2. generate_hypotheses → 3. evaluate_via_ibe
+    1. peircean_observe_anomaly → 2. peircean_generate_hypotheses → 3. peircean_evaluate_via_ibe
 
     Peirce's Schema: "The surprising fact, C, is observed."
 
@@ -100,9 +114,16 @@ def observe_anomaly(observation: str, context: str | None = None, domain: str = 
         }
 
     Next Step:
-        Pass the anomaly JSON to generate_hypotheses() for Phase 2.
+        Pass the anomaly JSON to peircean_generate_hypotheses() for Phase 2.
     """
     logger.info(f"Phase 1: Observing anomaly in domain '{domain}'")
+
+    # Input validation
+    if not observation or not observation.strip():
+        return error_response(
+            "Empty observation provided",
+            hint="Provide a non-empty observation describing the surprising fact",
+        )
 
     from ..core.models import Domain
     from ..core.prompts import DOMAIN_GUIDANCE
@@ -165,8 +186,8 @@ Respond with ONLY this JSON structure:
             "phase": 1,
             "phase_name": "observation",
             "prompt": prompt,
-            "next_tool": "generate_hypotheses",
-            "usage": "Execute this prompt with an LLM, then pass the anomaly JSON to generate_hypotheses()",
+            "next_tool": "peircean_generate_hypotheses",
+            "usage": "Execute this prompt with an LLM, then pass the anomaly JSON to peircean_generate_hypotheses()",
         },
         indent=2,
     )
@@ -175,18 +196,18 @@ Respond with ONLY this JSON structure:
 # =============================================================================
 # TOOL 2: GENERATE HYPOTHESES (Phase 2 - Generate A's)
 # =============================================================================
-@mcp.tool()
-def generate_hypotheses(anomaly_json: str, num_hypotheses: int = 5) -> str:
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True))
+def peircean_generate_hypotheses(anomaly_json: str, num_hypotheses: int = 5) -> str:
     """
     PHASE 2: Generate candidate hypotheses (A's) that would explain the anomaly.
 
     This is the SECOND tool in the 3-phase Peircean abductive loop:
-    1. observe_anomaly → 2. generate_hypotheses → 3. evaluate_via_ibe
+    1. peircean_observe_anomaly → 2. peircean_generate_hypotheses → 3. peircean_evaluate_via_ibe
 
     Peirce's Schema: "But if A were true, C would be a matter of course."
 
     Args:
-        anomaly_json: The JSON output from observe_anomaly (Phase 1).
+        anomaly_json: The JSON output from peircean_observe_anomaly (Phase 1).
             Example: '{"anomaly": {"fact": "...", "surprise_level": "high", ...}}'
         num_hypotheses: Number of distinct hypotheses to generate (default: 5).
             Example: 5
@@ -216,9 +237,16 @@ def generate_hypotheses(anomaly_json: str, num_hypotheses: int = 5) -> str:
         }
 
     Next Step:
-        Pass the hypotheses JSON to evaluate_via_ibe() for Phase 3.
+        Pass the hypotheses JSON to peircean_evaluate_via_ibe() for Phase 3.
     """
     logger.info(f"Phase 2: Generating {num_hypotheses} hypotheses")
+
+    # Input validation
+    if num_hypotheses < 1 or num_hypotheses > 20:
+        return error_response(
+            f"num_hypotheses must be between 1 and 20, got {num_hypotheses}",
+            hint="Use a value between 1 and 20 for num_hypotheses",
+        )
 
     # Parse the anomaly JSON
     try:
@@ -229,12 +257,9 @@ def generate_hypotheses(anomaly_json: str, num_hypotheses: int = 5) -> str:
             anomaly = anomaly_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in anomaly_json parameter")
-        return json.dumps(
-            {
-                "error": "Invalid JSON in anomaly_json parameter",
-                "hint": "Pass the raw JSON output from observe_anomaly",
-            },
-            indent=2,
+        return error_response(
+            "Invalid JSON in anomaly_json parameter",
+            hint="Pass the raw JSON output from peircean_observe_anomaly",
         )
 
     fact = anomaly.get("fact", str(anomaly))
@@ -320,8 +345,8 @@ Generate exactly {num_hypotheses} hypotheses.
             "phase": 2,
             "phase_name": "hypothesis_generation",
             "prompt": prompt,
-            "next_tool": "evaluate_via_ibe",
-            "usage": "Execute this prompt with an LLM, then pass the hypotheses JSON to evaluate_via_ibe()",
+            "next_tool": "peircean_evaluate_via_ibe",
+            "usage": "Execute this prompt with an LLM, then pass the hypotheses JSON to peircean_evaluate_via_ibe()",
         },
         indent=2,
     )
@@ -330,24 +355,24 @@ Generate exactly {num_hypotheses} hypotheses.
 # =============================================================================
 # TOOL 3: EVALUATE VIA IBE (Phase 3 - Inference to Best Explanation)
 # =============================================================================
-@mcp.tool()
-def evaluate_via_ibe(
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True))
+def peircean_evaluate_via_ibe(
     anomaly_json: str,
     hypotheses_json: str,
     use_council: bool = False,
-    custom_council: list[str] = None,
+    custom_council: list[str] | None = None,
 ) -> str:
     """
     PHASE 3: Select the best explanation using Inference to Best Explanation (IBE).
 
     This is the FINAL tool in the 3-phase Peircean abductive loop:
-    1. observe_anomaly → 2. generate_hypotheses → 3. evaluate_via_ibe
+    1. peircean_observe_anomaly → 2. peircean_generate_hypotheses → 3. peircean_evaluate_via_ibe
 
     Peirce's Schema: "Hence, there is reason to suspect that A is true."
 
     Args:
-        anomaly_json: The JSON output from observe_anomaly (Phase 1).
-        hypotheses_json: The JSON output from generate_hypotheses (Phase 2).
+        anomaly_json: The JSON output from peircean_observe_anomaly (Phase 1).
+        hypotheses_json: The JSON output from peircean_generate_hypotheses (Phase 2).
         use_council: Include Council of Critics (default: false).
         custom_council: Optional list of specific critic roles to use.
             Example: ["Forensic Accountant", "Security Engineer", "Legal Counsel"]
@@ -369,7 +394,10 @@ def evaluate_via_ibe(
             anomaly = anomaly_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in anomaly_json parameter")
-        return json.dumps({"error": "Invalid JSON in anomaly_json parameter"}, indent=2)
+        return error_response(
+            "Invalid JSON in anomaly_json parameter",
+            hint="Pass the raw JSON output from peircean_observe_anomaly",
+        )
 
     try:
         hypotheses_data = json.loads(hypotheses_json)
@@ -379,7 +407,10 @@ def evaluate_via_ibe(
             hypotheses = hypotheses_data
     except json.JSONDecodeError:
         logger.error("Invalid JSON in hypotheses_json parameter")
-        return json.dumps({"error": "Invalid JSON in hypotheses_json parameter"}, indent=2)
+        return error_response(
+            "Invalid JSON in hypotheses_json parameter",
+            hint="Pass the raw JSON output from peircean_generate_hypotheses",
+        )
 
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
@@ -554,9 +585,12 @@ Respond with ONLY this JSON structure:
 # =============================================================================
 # BONUS TOOL: SINGLE-SHOT ABDUCTION
 # =============================================================================
-@mcp.tool()
-def abduce_single_shot(
-    observation: str, context: str | None = None, domain: str = "general", num_hypotheses: int = 5
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True))
+def peircean_abduce_single_shot(
+    observation: str,
+    context: str | None = None,
+    domain: str = "general",
+    num_hypotheses: int = 5,
 ) -> str:
     """
     SINGLE-SHOT: Complete abductive reasoning in one prompt.
@@ -565,7 +599,7 @@ def abduce_single_shot(
     Use this for quick analysis when you don't need intermediate results.
 
     For step-by-step control, use the 3-phase flow instead:
-    1. observe_anomaly → 2. generate_hypotheses → 3. evaluate_via_ibe
+    1. peircean_observe_anomaly → 2. peircean_generate_hypotheses → 3. peircean_evaluate_via_ibe
 
     Args:
         observation: The surprising/anomalous fact to explain.
@@ -599,6 +633,19 @@ def abduce_single_shot(
         }
     """
     logger.info(f"Single-shot abduction in domain '{domain}'")
+
+    # Input validation
+    if not observation or not observation.strip():
+        return error_response(
+            "Empty observation provided",
+            hint="Provide a non-empty observation describing the surprising fact",
+        )
+
+    if num_hypotheses < 1 or num_hypotheses > 20:
+        return error_response(
+            f"num_hypotheses must be between 1 and 20, got {num_hypotheses}",
+            hint="Use a value between 1 and 20 for num_hypotheses",
+        )
 
     from ..core.models import Domain
     from ..core.prompts import DOMAIN_GUIDANCE
@@ -702,8 +749,8 @@ Respond with ONLY this JSON structure:
 # =============================================================================
 # TOOL: CRITIC EVALUATION (Council of Critics)
 # =============================================================================
-@mcp.tool()
-def critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str:
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True))
+def peircean_critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str:
     """
     COUNCIL: Get evaluation from a specific critic perspective.
 
@@ -713,11 +760,11 @@ def critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str
     Args:
         critic: The role to adopt.
             Examples: "empiricist", "skeptic", "forensic_accountant", "security_engineer"
-        anomaly_json: The JSON output from observe_anomaly (Phase 1).
-        hypotheses_json: The JSON output from generate_hypotheses (Phase 2).
+        anomaly_json: The JSON output from peircean_observe_anomaly (Phase 1).
+        hypotheses_json: The JSON output from peircean_generate_hypotheses (Phase 2).
 
     Example:
-        critic_evaluate(
+        peircean_critic_evaluate(
             critic="forensic_accountant",
             anomaly_json='{"anomaly": ...}',
             hypotheses_json='{"hypotheses": ...}'
@@ -726,6 +773,11 @@ def critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str
     Returns:
         A prompt for the specified critic's evaluation.
     """
+    # Input validation: fallback to general_critic if empty
+    if not critic or not critic.strip():
+        logger.warning("Empty critic provided, falling back to 'general_critic'")
+        critic = "general_critic"
+
     logger.info(f"Council: Consulting the {critic}")
 
     # Parse inputs
@@ -733,13 +785,19 @@ def critic_evaluate(critic: str, anomaly_json: str, hypotheses_json: str) -> str
         anomaly_data = json.loads(anomaly_json)
         anomaly = anomaly_data.get("anomaly", anomaly_data)
     except json.JSONDecodeError:
-        return json.dumps({"error": "Invalid anomaly_json"}, indent=2)
+        return error_response(
+            "Invalid JSON in anomaly_json parameter",
+            hint="Pass the raw JSON output from peircean_observe_anomaly",
+        )
 
     try:
         hypotheses_data = json.loads(hypotheses_json)
         hypotheses = hypotheses_data.get("hypotheses", hypotheses_data)
     except json.JSONDecodeError:
-        return json.dumps({"error": "Invalid hypotheses_json"}, indent=2)
+        return error_response(
+            "Invalid JSON in hypotheses_json parameter",
+            hint="Pass the raw JSON output from peircean_generate_hypotheses",
+        )
 
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)

@@ -25,9 +25,26 @@ import json
 import random
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict, cast
 
 from ..core.models import Domain
+
+
+class SeedHypothesis(TypedDict, total=False):
+    """Type for seed hypothesis data."""
+
+    statement: str
+    explanation: str
+    prior_probability: float
+    assumptions: list[str]
+
+
+class SeedObservation(TypedDict):
+    """Type for seed observation data."""
+
+    observation: str
+    context: dict[str, Any]
+    hypotheses: list[SeedHypothesis]
 
 
 @dataclass
@@ -119,7 +136,7 @@ Recommended next steps:
 
 
 # Example seed data for generating training examples
-SEED_OBSERVATIONS = {
+SEED_OBSERVATIONS: dict[Domain, list[SeedObservation]] = {
     Domain.FINANCIAL: [
         {
             "observation": "Stock price dropped 8% immediately after earnings beat expectations by 15%",
@@ -240,7 +257,7 @@ class AbductiveDataGenerator:
         # Create evaluation scores
         evaluation = {}
         hypotheses = base["hypotheses"]
-        for i, h in enumerate(hypotheses):
+        for i, _h in enumerate(hypotheses):
             hid = f"H{i + 1}"
             scores = {
                 "explanatory_scope": 0.5 + self.rng.random() * 0.4,
@@ -261,7 +278,7 @@ class AbductiveDataGenerator:
             domain=domain,
             context=base["context"],
             surprise_level="high",
-            hypotheses=hypotheses,
+            hypotheses=cast(list[dict[str, Any]], hypotheses),
             evaluation=evaluation,
             selected=best_hypothesis["statement"],
             rationale=f"This hypothesis has the highest composite IBE score ({evaluation[best_id]['composite']:.2f}) "
@@ -288,7 +305,7 @@ class AbductiveDataGenerator:
         return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     """CLI for generating training data."""
     import argparse
 

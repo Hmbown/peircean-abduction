@@ -317,7 +317,6 @@ class AbductionResult(BaseModel):
                 lines.append("")
 
         if self.selected_hypothesis:
-            best = self.best_hypothesis
             lines.extend(
                 [
                     "## Selected Hypothesis (Inference to the Best Explanation)",

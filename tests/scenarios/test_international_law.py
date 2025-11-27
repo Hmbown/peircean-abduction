@@ -2,7 +2,11 @@ import json
 
 import pytest
 
-from peircean.mcp.server import evaluate_via_ibe, generate_hypotheses, observe_anomaly
+from peircean.mcp.server import (
+    peircean_evaluate_via_ibe,
+    peircean_generate_hypotheses,
+    peircean_observe_anomaly,
+)
 
 
 class TestInternationalLawScenario:
@@ -18,7 +22,7 @@ class TestInternationalLawScenario:
 
     def test_full_scenario_flow(self, anomaly_input):
         # Phase 1: Observe Anomaly
-        phase1_output = observe_anomaly(
+        phase1_output = peircean_observe_anomaly(
             observation=anomaly_input["observation"],
             context=anomaly_input["context"],
             domain=anomaly_input["domain"],
@@ -57,7 +61,7 @@ class TestInternationalLawScenario:
         )
 
         # Phase 2: Generate Hypotheses
-        phase2_output = generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
+        phase2_output = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
         phase2_data = json.loads(phase2_output)
 
         assert phase2_data["phase"] == 2
@@ -149,7 +153,7 @@ class TestInternationalLawScenario:
             "Orbital Mechanics Expert",
             "Military Strategy Analyst",
         ]
-        phase3_output = evaluate_via_ibe(
+        phase3_output = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
             custom_council=custom_council,

@@ -182,25 +182,25 @@ python -c "import sys; print(sys.executable)"
 
 | Phase | Tool | Purpose |
 |-------|------|---------|
-| 1 | `observe_anomaly` | Register the surprising fact (C) |
-| 2 | `generate_hypotheses` | Generate candidate explanations (A's) |
-| 3 | `evaluate_via_ibe` | Select best explanation via IBE |
+| 1 | `peircean_observe_anomaly` | Register the surprising fact (C) |
+| 2 | `peircean_generate_hypotheses` | Generate candidate explanations (A's) |
+| 3 | `peircean_evaluate_via_ibe` | Select best explanation via IBE |
 
 ### Additional Tools
 
 | Tool | Purpose |
 |------|---------|
-| `abduce_single_shot` | All 3 phases in one prompt |
-| `critic_evaluate` | Council of Critics perspective |
+| `peircean_abduce_single_shot` | All 3 phases in one prompt |
+| `peircean_critic_evaluate` | Council of Critics perspective |
 
 ---
 
-### `observe_anomaly`
+### `peircean_observe_anomaly`
 
 **Phase 1:** Register the surprising fact.
 
 ```
-observe_anomaly(
+peircean_observe_anomaly(
   observation: "Server latency spiked 10x but CPU/memory normal",
   context: "No recent deployments, traffic is steady",
   domain: "technical"
@@ -216,31 +216,31 @@ observe_anomaly(
 
 ---
 
-### `generate_hypotheses`
+### `peircean_generate_hypotheses`
 
 **Phase 2:** Generate candidate explanations.
 
 ```
-generate_hypotheses(
+peircean_generate_hypotheses(
   anomaly_json: '{"anomaly": {...}}',  // Output from Phase 1
   num_hypotheses: 5
 )
 ```
 
 **Parameters:**
-- `anomaly_json` (required): JSON from `observe_anomaly`
-- `num_hypotheses` (optional): Number to generate (default: 5)
+- `anomaly_json` (required): JSON from `peircean_observe_anomaly`
+- `num_hypotheses` (optional): Number to generate (default: 5, range: 1-20)
 
 **Output:** JSON with `hypotheses` array containing `id`, `statement`, `explains_anomaly`, `testable_predictions`, etc.
 
 ---
 
-### `evaluate_via_ibe`
+### `peircean_evaluate_via_ibe`
 
 **Phase 3:** Inference to Best Explanation.
 
 ```
-evaluate_via_ibe(
+peircean_evaluate_via_ibe(
   anomaly_json: '{"anomaly": {...}}',
   hypotheses_json: '{"hypotheses": [...]}',
   use_council: true
@@ -260,7 +260,7 @@ evaluate_via_ibe(
 For domain-specific anomalies, nominate specialists instead of the default 5 critics:
 
 ```
-evaluate_via_ibe(
+peircean_evaluate_via_ibe(
   anomaly_json: '{"anomaly": {...}}',
   hypotheses_json: '{"hypotheses": [...]}',
   custom_council: ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
@@ -271,12 +271,12 @@ The `recommended_council` field from Phase 1's output can guide your choice of s
 
 ---
 
-### `abduce_single_shot`
+### `peircean_abduce_single_shot`
 
 Complete abduction in one step.
 
 ```
-abduce_single_shot(
+peircean_abduce_single_shot(
   observation: "Customer churn rate doubled in Q3",
   context: "No price changes, NPS stable",
   domain: "financial",
@@ -288,12 +288,12 @@ abduce_single_shot(
 
 ---
 
-### `critic_evaluate`
+### `peircean_critic_evaluate`
 
 Get perspective from a specific critic.
 
 ```
-critic_evaluate(
+peircean_critic_evaluate(
   critic: "skeptic",
   anomaly_json: '{"anomaly": {...}}',
   hypotheses_json: '{"hypotheses": [...]}'
@@ -325,17 +325,17 @@ trading volume spiked 500% with no news"
 
 ### Step-by-Step Workflow
 
-1. Call `observe_anomaly` with your observation
+1. Call `peircean_observe_anomaly` with your observation
 2. Execute returned prompt → get `anomaly` JSON
-3. Call `generate_hypotheses` with anomaly JSON
+3. Call `peircean_generate_hypotheses` with anomaly JSON
 4. Execute returned prompt → get `hypotheses` JSON
-5. Call `evaluate_via_ibe` with both JSONs
+5. Call `peircean_evaluate_via_ibe` with both JSONs
 6. Execute returned prompt → get `evaluation` with best hypothesis
 
 ### With Council of Critics
 
 ```
-evaluate_via_ibe(
+peircean_evaluate_via_ibe(
   anomaly_json: "...",
   hypotheses_json: "...",
   use_council: true
@@ -345,8 +345,8 @@ evaluate_via_ibe(
 Or consult critics individually:
 
 ```
-critic_evaluate(critic: "skeptic", anomaly_json: "...", hypotheses_json: "...")
-critic_evaluate(critic: "empiricist", anomaly_json: "...", hypotheses_json: "...")
+peircean_critic_evaluate(critic: "skeptic", anomaly_json: "...", hypotheses_json: "...")
+peircean_critic_evaluate(critic: "empiricist", anomaly_json: "...", hypotheses_json: "...")
 ```
 
 ---
@@ -404,13 +404,13 @@ MCP Client (Claude Desktop, Cursor, etc.)
      │
      │ calls tool
      ▼
-┌─────────────────────────────────────┐
-│  Peircean MCP Server (FastMCP)      │
-│                                     │
-│  observe_anomaly → prompt           │
-│  generate_hypotheses → prompt       │
-│  evaluate_via_ibe → prompt          │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│  Peircean MCP Server (FastMCP)               │
+│                                              │
+│  peircean_observe_anomaly → prompt           │
+│  peircean_generate_hypotheses → prompt       │
+│  peircean_evaluate_via_ibe → prompt          │
+└──────────────────────────────────────────────┘
      │
      │ returns prompt (JSON)
      ▼

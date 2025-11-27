@@ -5,11 +5,11 @@ Tests for Peircean MCP Server.
 import json
 
 from peircean.mcp.server import (
-    abduce_single_shot,
-    critic_evaluate,
-    evaluate_via_ibe,
-    generate_hypotheses,
-    observe_anomaly,
+    peircean_abduce_single_shot,
+    peircean_critic_evaluate,
+    peircean_evaluate_via_ibe,
+    peircean_generate_hypotheses,
+    peircean_observe_anomaly,
 )
 
 
@@ -17,7 +17,7 @@ class TestMCPServer:
     """Test MCP server tools."""
 
     def test_observe_anomaly_returns_prompt(self):
-        result_json = observe_anomaly(observation="Test observation", domain="technical")
+        result_json = peircean_observe_anomaly(observation="Test observation", domain="technical")
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -27,7 +27,9 @@ class TestMCPServer:
         assert "Technical-specific" in result["prompt"] or "technical" in result["prompt"].lower()
 
     def test_observe_anomaly_invalid_domain_defaults_to_general(self):
-        result_json = observe_anomaly(observation="Test observation", domain="invalid_domain")
+        result_json = peircean_observe_anomaly(
+            observation="Test observation", domain="invalid_domain"
+        )
         result = json.loads(result_json)
 
         # When domain is invalid, it prints "invalid_domain" in the prompt
@@ -45,7 +47,7 @@ class TestMCPServer:
             }
         )
 
-        result_json = generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
+        result_json = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -55,16 +57,20 @@ class TestMCPServer:
         assert "Generate 3" in result["prompt"]
 
     def test_generate_hypotheses_invalid_json_returns_error(self):
-        result_json = generate_hypotheses(anomaly_json="invalid json")
+        result_json = peircean_generate_hypotheses(anomaly_json="invalid json")
         result = json.loads(result_json)
 
+        assert result["type"] == "error"
         assert "error" in result
+        assert "hint" in result
 
     def test_evaluate_via_ibe_returns_prompt(self):
         anomaly_json = json.dumps({"anomaly": {"fact": "Test observation"}})
         hypotheses_json = json.dumps({"hypotheses": [{"id": "H1", "statement": "Test H1"}]})
 
-        result_json = evaluate_via_ibe(anomaly_json=anomaly_json, hypotheses_json=hypotheses_json)
+        result_json = peircean_evaluate_via_ibe(
+            anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
+        )
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -76,7 +82,7 @@ class TestMCPServer:
         anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
         hypotheses_json = json.dumps({"hypotheses": []})
 
-        result_json = evaluate_via_ibe(
+        result_json = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json, hypotheses_json=hypotheses_json, use_council=True
         )
         result = json.loads(result_json)
@@ -84,7 +90,9 @@ class TestMCPServer:
         assert "Council of Critics" in result["prompt"]
 
     def test_abduce_single_shot_returns_prompt(self):
-        result_json = abduce_single_shot(observation="Test observation", domain="financial")
+        result_json = peircean_abduce_single_shot(
+            observation="Test observation", domain="financial"
+        )
         result = json.loads(result_json)
 
         assert result["type"] == "prompt"
@@ -96,7 +104,7 @@ class TestMCPServer:
         anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
         hypotheses_json = json.dumps({"hypotheses": [{"id": "H1", "statement": "H1"}]})
 
-        result_json = critic_evaluate(
+        result_json = peircean_critic_evaluate(
             critic="skeptic", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
         )
         result = json.loads(result_json)
@@ -107,9 +115,72 @@ class TestMCPServer:
         assert "THE SKEPTIC" in result["prompt"]
 
     def test_critic_evaluate_invalid_critic(self):
-        result_json = critic_evaluate(critic="jester", anomaly_json="{}", hypotheses_json="{}")
+        result_json = peircean_critic_evaluate(
+            critic="jester", anomaly_json="{}", hypotheses_json="{}"
+        )
         result = json.loads(result_json)
 
         # The implementation allows any critic role, so this should NOT return an error
         assert result["type"] == "prompt"
         assert "JESTER" in result["prompt"]
+
+    # Input validation tests
+    def test_observe_anomaly_empty_observation_returns_error(self):
+        result_json = peircean_observe_anomaly(observation="", domain="technical")
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "Empty observation" in result["error"]
+        assert "hint" in result
+
+    def test_observe_anomaly_whitespace_only_returns_error(self):
+        result_json = peircean_observe_anomaly(observation="   ", domain="technical")
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "Empty observation" in result["error"]
+
+    def test_generate_hypotheses_num_too_low_returns_error(self):
+        anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
+        result_json = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=0)
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "num_hypotheses" in result["error"]
+        assert "between 1 and 20" in result["error"]
+
+    def test_generate_hypotheses_num_too_high_returns_error(self):
+        anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
+        result_json = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=25)
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "num_hypotheses" in result["error"]
+        assert "between 1 and 20" in result["error"]
+
+    def test_abduce_single_shot_empty_observation_returns_error(self):
+        result_json = peircean_abduce_single_shot(observation="")
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "Empty observation" in result["error"]
+
+    def test_abduce_single_shot_num_too_high_returns_error(self):
+        result_json = peircean_abduce_single_shot(observation="Test", num_hypotheses=100)
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert "num_hypotheses" in result["error"]
+
+    def test_critic_evaluate_empty_critic_falls_back(self):
+        anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
+        hypotheses_json = json.dumps({"hypotheses": [{"id": "H1", "statement": "H1"}]})
+
+        result_json = peircean_critic_evaluate(
+            critic="", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
+        )
+        result = json.loads(result_json)
+
+        # Should fall back to "general_critic" and return a prompt
+        assert result["type"] == "prompt"
+        assert "GENERAL_CRITIC" in result["prompt"]

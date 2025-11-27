@@ -18,7 +18,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from .models import (
     AbductionResult,
@@ -250,7 +250,7 @@ class AbductionAgent:
             domain=self.domain,
         )
 
-        hypotheses = []
+        hypotheses: list[Hypothesis] = []
         for h_data in data.get("hypotheses", []):
             scores_data = h_data.get("scores", {})
             hypotheses.append(
@@ -345,7 +345,7 @@ class AbductionAgent:
         response = await self._call_llm(prompt)
         data = self._parse_json(response)
 
-        hypotheses = []
+        hypotheses: list[Hypothesis] = []
         for h_data in data.get("hypotheses", []):
             assumptions = [
                 Assumption(
@@ -469,7 +469,7 @@ class AbductionAgent:
         recommended = None
         if valid_evals:
             # Find consensus by counting recommendations
-            recommendations = {}
+            recommendations: dict[str, int] = {}
             for e in valid_evals:
                 if hasattr(e, "recommended_hypothesis") and e.recommended_hypothesis:
                     recommendations[e.recommended_hypothesis] = (
@@ -518,7 +518,7 @@ class AbductionAgent:
     async def _call_llm(self, prompt: str) -> str:
         """Call the LLM with the given prompt."""
         if self.llm_call_async:
-            return await self.llm_call_async(prompt)
+            return cast(str, await self.llm_call_async(prompt))
         elif self.llm_call:
             # Run sync function in executor
             loop = asyncio.get_event_loop()
@@ -543,7 +543,7 @@ class AbductionAgent:
             text = text.strip()
 
         try:
-            return json.loads(text)
+            return cast(dict[str, Any], json.loads(text))
         except json.JSONDecodeError as e:
             logger.warning(f"Failed to parse JSON: {e}")
             logger.debug(f"Raw response: {response[:500]}...")

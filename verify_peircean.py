@@ -17,18 +17,17 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any
 
 # =============================================================================
 # TEST CONFIGURATION
 # =============================================================================
 
 REQUIRED_TOOLS = [
-    "observe_anomaly",
-    "generate_hypotheses",
-    "evaluate_via_ibe",
-    "abduce_single_shot",
-    "critic_evaluate",
+    "peircean_observe_anomaly",
+    "peircean_generate_hypotheses",
+    "peircean_evaluate_via_ibe",
+    "peircean_abduce_single_shot",
+    "peircean_critic_evaluate",
 ]
 
 REQUIRED_DOCSTRING_ELEMENTS = [
@@ -129,20 +128,23 @@ def test_imports() -> TestResult:
     result = TestResult("Module Imports")
 
     try:
-        from peircean.mcp.server import mcp, SYSTEM_DIRECTIVE
+        from peircean.mcp.server import SYSTEM_DIRECTIVE
+        _ = SYSTEM_DIRECTIVE  # Verify it imported correctly
         result.ok("peircean.mcp.server imports successfully")
     except ImportError as e:
         result.fail(f"Cannot import peircean.mcp.server: {e}")
         return result
 
     try:
-        from peircean.core.models import Domain, SurpriseLevel, Hypothesis
+        from peircean.core.models import Domain, Hypothesis, SurpriseLevel
+        _ = (Domain, Hypothesis, SurpriseLevel)  # Verify imports work
         result.ok("peircean.core.models imports successfully")
     except ImportError as e:
         result.fail(f"Cannot import peircean.core.models: {e}")
 
     try:
         from peircean.core.prompts import DOMAIN_GUIDANCE
+        _ = DOMAIN_GUIDANCE  # Verify import works
         result.ok("peircean.core.prompts imports successfully")
     except ImportError as e:
         result.fail(f"Cannot import peircean.core.prompts: {e}")
@@ -191,11 +193,11 @@ def test_tool_docstrings() -> TestResult:
         from peircean.mcp import server
 
         tools_to_check = [
-            ("observe_anomaly", server.observe_anomaly),
-            ("generate_hypotheses", server.generate_hypotheses),
-            ("evaluate_via_ibe", server.evaluate_via_ibe),
-            ("abduce_single_shot", server.abduce_single_shot),
-            ("critic_evaluate", server.critic_evaluate),
+            ("peircean_observe_anomaly", server.peircean_observe_anomaly),
+            ("peircean_generate_hypotheses", server.peircean_generate_hypotheses),
+            ("peircean_evaluate_via_ibe", server.peircean_evaluate_via_ibe),
+            ("peircean_abduce_single_shot", server.peircean_abduce_single_shot),
+            ("peircean_critic_evaluate", server.peircean_critic_evaluate),
         ]
 
         for tool_name, tool_func in tools_to_check:
@@ -226,10 +228,10 @@ def test_observe_anomaly() -> TestResult:
     result = TestResult("observe_anomaly Tool")
 
     try:
-        from peircean.mcp.server import observe_anomaly
+        from peircean.mcp.server import peircean_observe_anomaly
 
         # Test basic call
-        output = observe_anomaly(
+        output = peircean_observe_anomaly(
             observation="Server latency spiked 10x but CPU/memory normal",
             context="No recent deployments",
             domain="technical"
@@ -253,7 +255,7 @@ def test_observe_anomaly() -> TestResult:
         else:
             result.fail("Missing or short prompt text")
 
-        if "next_tool" in data and data["next_tool"] == "generate_hypotheses":
+        if "next_tool" in data and data["next_tool"] == "peircean_generate_hypotheses":
             result.ok("Indicates next tool")
         else:
             result.fail("Does not indicate next tool")
@@ -287,11 +289,11 @@ def test_generate_hypotheses() -> TestResult:
     result = TestResult("generate_hypotheses Tool")
 
     try:
-        from peircean.mcp.server import generate_hypotheses
+        from peircean.mcp.server import peircean_generate_hypotheses
 
         # Test with valid anomaly JSON
         anomaly_json = json.dumps(EXAMPLE_ANOMALY)
-        output = generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
+        output = peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=3)
 
         data = json.loads(output)
 
@@ -305,13 +307,13 @@ def test_generate_hypotheses() -> TestResult:
         else:
             result.fail("Does not indicate phase 2")
 
-        if "next_tool" in data and data["next_tool"] == "evaluate_via_ibe":
+        if "next_tool" in data and data["next_tool"] == "peircean_evaluate_via_ibe":
             result.ok("Indicates next tool")
         else:
             result.fail("Does not indicate next tool")
 
         # Test error handling with invalid JSON
-        error_output = generate_hypotheses(anomaly_json="not valid json", num_hypotheses=3)
+        error_output = peircean_generate_hypotheses(anomaly_json="not valid json", num_hypotheses=3)
         error_data = json.loads(error_output)
 
         if "error" in error_data:
@@ -330,13 +332,13 @@ def test_evaluate_via_ibe() -> TestResult:
     result = TestResult("evaluate_via_ibe Tool")
 
     try:
-        from peircean.mcp.server import evaluate_via_ibe
+        from peircean.mcp.server import peircean_evaluate_via_ibe
 
         anomaly_json = json.dumps(EXAMPLE_ANOMALY)
         hypotheses_json = json.dumps(EXAMPLE_HYPOTHESES)
 
         # Test without council
-        output = evaluate_via_ibe(
+        output = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
             use_council=False
@@ -360,7 +362,7 @@ def test_evaluate_via_ibe() -> TestResult:
             result.fail("Does not indicate terminal phase")
 
         # Test with default council
-        council_output = evaluate_via_ibe(
+        council_output = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
             use_council=True
@@ -386,20 +388,20 @@ def test_evaluate_via_ibe() -> TestResult:
 
         # Test with CUSTOM council
         custom_council = ["Chef", "Food Critic"]
-        custom_output = evaluate_via_ibe(
+        custom_output = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
             custom_council=custom_council
         )
-        
+
         custom_data = json.loads(custom_output)
         custom_prompt = custom_data.get("prompt", "")
-        
+
         if "The Chef" in custom_prompt and "The Food Critic" in custom_prompt:
             result.ok("Custom council members included in prompt")
         else:
             result.fail("Custom council members missing from prompt")
-            
+
         if "\"chef\": 0.0-1.0" in custom_prompt and "\"food_critic\": 0.0-1.0" in custom_prompt:
             result.ok("Custom council scores included in schema")
         else:
@@ -416,13 +418,13 @@ def test_critic_evaluate() -> TestResult:
     result = TestResult("critic_evaluate Tool")
 
     try:
-        from peircean.mcp.server import critic_evaluate
+        from peircean.mcp.server import peircean_critic_evaluate
 
         anomaly_json = json.dumps(EXAMPLE_ANOMALY)
         hypotheses_json = json.dumps(EXAMPLE_HYPOTHESES)
 
         # Test valid standard critic
-        output = critic_evaluate(
+        output = peircean_critic_evaluate(
             critic="empiricist",
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json
@@ -441,19 +443,19 @@ def test_critic_evaluate() -> TestResult:
             result.fail("Standard critic not identified")
 
         # Test DYNAMIC critic
-        dynamic_output = critic_evaluate(
+        dynamic_output = peircean_critic_evaluate(
             critic="forensic_accountant",
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json
         )
 
         dynamic_data = json.loads(dynamic_output)
-        
+
         if "type" in dynamic_data and dynamic_data["type"] == "prompt":
             result.ok("Dynamic critic returns prompt")
         else:
             result.fail("Dynamic critic does not return prompt")
-            
+
         prompt = dynamic_data.get("prompt", "")
         if "FORENSIC_ACCOUNTANT" in prompt:
             result.ok("Dynamic critic role included in prompt")
@@ -471,9 +473,9 @@ def test_single_shot() -> TestResult:
     result = TestResult("abduce_single_shot Tool")
 
     try:
-        from peircean.mcp.server import abduce_single_shot
+        from peircean.mcp.server import peircean_abduce_single_shot
 
-        output = abduce_single_shot(
+        output = peircean_abduce_single_shot(
             observation="Customer churn rate doubled in Q3",
             context="No price changes, NPS stable",
             domain="financial",
@@ -515,8 +517,9 @@ def test_logging_configuration() -> TestResult:
     result = TestResult("Logging Configuration")
 
     try:
-        from peircean.mcp.server import logger
         import logging
+
+        from peircean.mcp.server import logger
 
         # Check logger exists
         if logger:

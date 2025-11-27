@@ -234,14 +234,14 @@ For domain-specific anomalies, you can nominate a custom council of specialists.
 
 ```python
 # Phase 1 may return a recommended_council based on domain
-anomaly = observe_anomaly(
+anomaly = peircean_observe_anomaly(
     observation="A 'defunct' satellite fired thrusters before collision",
     domain="legal"
 )
 # Returns: recommended_council: ["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
 
 # Phase 3: Use custom council
-evaluation = evaluate_via_ibe(
+evaluation = peircean_evaluate_via_ibe(
     anomaly_json=anomaly,
     hypotheses_json=hypotheses,
     custom_council=["Space Law Specialist", "Orbital Mechanics Expert", "Military Strategy Analyst"]
