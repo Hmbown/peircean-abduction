@@ -1,11 +1,13 @@
-# Peircean
+# Peircean Abduction
 
 [![CI](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/peircean-abduction/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/peircean-abduction.svg)](https://pypi.org/project/peircean-abduction/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A **Logic Harness** for abductive inference. Forces LLMs to make uncertainty visible through explicit hypothesis generation and Inference to Best Explanation.
+**A Logic Harness for Abductive Inference.**
+
+Peircean Abduction forces LLMs to stop guessing and start investigating. It implements Charles Sanders Peirce's logical framework to make uncertainty visible and hypotheses testable.
 
 > **Anomaly in → Hypothesis out.**
 
@@ -16,176 +18,67 @@ Hence, there is reason to suspect that A is true."
 — Charles Sanders Peirce, Collected Papers 5.189
 ```
 
-## ⚡ Case Study: International Space Law
-
-**The Problem:** Standard LLMs act like a **Jury** (deciding true/false based on probability). They tend to "lump" distinct possibilities into a single safe conclusion.
-
-**The Solution:** Peircean Abduction acts like a **Detective** (investigating *which* version of the truth is most likely).
-
-**The Scenario:**
-A "defunct" military satellite (Country A) collided with a commercial station (Country B). Country A claimed it was uncontrollable debris, but recovered flight logs show a **2-second thruster burn 10 seconds before impact**—steering *into* the collision path.
-
-### Standard LLM (Induction)
-> "The most likely explanation is that Country A was covertly maintaining an active military satellite... and a specific maneuver (**whether automated failure or intentional command**) directly caused the collision."
-
-*   **Result:** It **lumps** the two most important possibilities (Glitch vs. Attack) into a parenthetical. It stops at "Liability."
-
-### Peircean Harness (Abduction)
-The harness forces the model to split the anomaly into distinct, testable hypotheses.
-
-**1. Observation (`peircean_observe_anomaly`)**
-> **Anomaly:** "Defunct 'debris' satellite executed a controlled burn 10s before collision, steering into the target."
-> **Surprise Source:** Violates definition of space debris and expectation of rational actor.
-
-**2. Hypotheses (`peircean_generate_hypotheses`)**
-> **H1 (Intent):** "The satellite was a dormant 'sleeper' weapon activated for a kinetic strike." (Explains the vector).
-> **H3 (Glitch):** "An automated 'end-of-life' deorbit script triggered erroneously." (Explains the burn, fails to explain the vector).
-
-**3. Selection (`peircean_evaluate_via_ibe`)**
-> **Verdict:** "Investigate H1. Check RF spectrum logs for uplink signals at T-10s."
-> **Rationale:** H1 uniquely explains the vector (steering INTO collision). H3 explains the burn but not the direction.
-
-**Key Insight:** H3 (glitch) has higher *prior probability* (0.40), but H1 (attack) has higher *explanatory power*. The harness catches this distinction.
-
-<details>
-<summary>See full Phase 1 output</summary>
-
-```json
-{
-  "fact": "Defunct 'debris' satellite executed a controlled burn 10s before collision, steering into the target",
-  "surprise_level": "anomalous",
-  "surprise_score": 0.95,
-  "expected_state": "Debris satellites cannot maneuver; rational actors avoid collisions",
-  "surprise_source": "Violates definition of space debris AND expectation of rational state actor behavior"
-}
-```
-
-</details>
-
-<details>
-<summary>See full Phase 3 IBE evaluation</summary>
-
-```
-              | Scope | Power | Parsimony | Testability | Composite
---------------|-------|-------|-----------|-------------|----------
-H1: Attack    | 0.95  | 0.90  | 0.70      | 0.85        | 0.87
-H2: Escalation| 0.80  | 0.75  | 0.65      | 0.70        | 0.73
-H3: Glitch    | 0.60  | 0.55  | 0.90      | 0.80        | 0.68
-
-SELECTED: H1 (Kinetic strike)
-Confidence: 0.87
-Recommended: Check RF spectrum logs for uplink at T-10s
-```
-
-</details>
-
 ---
 
-## The Difference
+## 🔍 What is this?
 
-| Aspect | Standard LLM | Peircean Harness |
-|--------|--------------|------------------|
-| **Approach** | Jury (probability-based) | Detective (investigation-based) |
-| **Output** | Single "most likely" answer | Ranked hypotheses with testable predictions |
-| **Uncertainty** | Hidden in hedging language | Explicit via surprise scores (0.0-1.0) |
-| **Actionability** | "This is probably true" | "Test H1 by checking X" |
-| **Distinct Options** | Lumped together | Kept separate for evaluation |
+Most LLMs act like a **Jury**: they weigh the evidence they have and give you a verdict (probability-based). They tend to "lump" distinct possibilities into a single, safe conclusion.
+
+**Peircean Abduction** acts like a **Detective**: it doesn't just decide; it *investigates*. It splits anomalies into distinct, testable hypotheses and tells you *how* to find the truth.
+
+### Key Features
+
+*   **Explicit Uncertainty**: Forces the model to quantify "surprise" (0.0 - 1.0).
+*   **Structured Hypotheses**: Every explanation comes with specific, testable predictions.
+*   **Inference to Best Explanation (IBE)**: A rigorous selection process based on Explanatory Power, Parsimony, and Testability.
+*   **Council of Critics**: Automatically simulates 5 specialist perspectives (Empiricist, Logician, Pragmatist, Economist, Skeptic) to stress-test ideas.
+*   **MCP Ready**: Built as a Model Context Protocol (MCP) server, ready to plug into Claude Desktop, Cursor, or any MCP client.
 
 ---
 
 ## 🚀 Quick Start
 
-1.  **[Install the Package](#installation)**
-2.  **Connect to your Client:**
-    *   [Claude Desktop](#claude-desktop)
-    *   [Cursor](#cursor)
-    *   [VS Code](#vs-code-with-mcp-extension)
-    *   [Claude CLI](#claude-code-cli)
-
----
-
-## The 3 Core Tools
-
-The harness enforces Peirce's three-stage schema:
-`C (Surprising Fact) → A (Hypothesis) → "If A, then C would be expected"`
-
-### 1. `peircean_observe_anomaly`
-Registers the surprising fact (C) and establishes a baseline.
-
-```python
-peircean_observe_anomaly(
-    observation="Satellite executed burn 10s before impact",
-    context="Country A claims it was debris",
-    domain="legal"
-)
-```
-
-### 2. `peircean_generate_hypotheses`
-Generates candidate explanations (A's) that would make C expected.
-
-```python
-peircean_generate_hypotheses(
-    anomaly_json='{"anomaly": {...}}',
-    num_hypotheses=3
-)
-```
-
-### 3. `peircean_evaluate_via_ibe`
-Selects the best explanation using Inference to Best Explanation (IBE).
-
-```python
-peircean_evaluate_via_ibe(
-    anomaly_json='{"anomaly": {...}}',
-    hypotheses_json='{"hypotheses": [...]}',
-    use_council=True
-)
-```
-
-## Council of Critics
-
-When `use_council=True`, hypotheses are evaluated from 5 perspectives:
-
-| Critic | Focus | Key Question |
-|--------|-------|--------------|
-| **Empiricist** | Evidence | What data supports/refutes this? |
-| **Logician** | Consistency | Is it internally consistent? |
-| **Pragmatist** | Actionability | What should we DO if true? |
-| **Economist** | Cost | Which is cheapest to test? |
-| **Skeptic** | Falsification | How would we disprove this? |
-
-## Installation
-
+### 1. Install
 ```bash
 pip install peircean-abduction
 ```
 
-Or from source:
+### 2. Run an Example
+We provide runnable Python scripts to demonstrate the logic harness.
 
+**Simple Demo (Single-Shot):**
 ```bash
+# Clone the repo first if you haven't
 git clone https://github.com/Hmbown/peircean-abduction.git
 cd peircean-abduction
-pip install -e ".[mcp]"
+
+# Run the quickstart
+python examples/quickstart.py
 ```
 
-## MCP Client Setup
+**Full Scenario (International Law):**
+```bash
+python examples/international_law.py
+```
+
+---
+
+## 🔌 MCP Server Setup
+
+Connect Peircean Abduction to your AI assistant (Claude, Cursor, etc.) to give it abductive reasoning superpowers.
 
 ### Claude Desktop
 
 **Automatic (recommended):**
-
 ```bash
 # macOS
 peircean-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
 # Windows
 peircean-setup-mcp --write "%APPDATA%\Claude\claude_desktop_config.json"
-
-# Linux
-peircean-setup-mcp --write "$HOME/.config/Claude/claude_desktop_config.json"
 ```
 
-**Manual:** Add to your config file:
-
+**Manual Configuration:**
 ```json
 {
   "mcpServers": {
@@ -197,49 +90,41 @@ peircean-setup-mcp --write "$HOME/.config/Claude/claude_desktop_config.json"
 }
 ```
 
-### Cursor
+### Cursor / VS Code
+1.  Run `peircean-setup-mcp` to generate the config JSON.
+2.  Paste it into your editor's MCP settings.
 
-1. Run `peircean-setup-mcp` (without `--write`) to get the JSON config.
-2. Copy the output.
-3. Go to **Settings → Features → MCP**.
-4. Paste the configuration.
-5. Restart Cursor.
+---
 
-### VS Code (with MCP extension)
+## 🧠 How It Works (The 3-Phase Loop)
 
-Add to your MCP extension settings:
+The harness enforces a strict 3-step logical flow:
 
-```json
-{
-  "mcp.servers": {
-    "peircean": {
-      "command": "python",
-      "args": ["-m", "peircean.mcp.server"]
-    }
-  }
-}
-```
+### Phase 1: Observe (`peircean_observe_anomaly`)
+*   **Input**: A raw observation (e.g., "Server latency spiked 10x but CPU is normal").
+*   **Output**: A structured "Anomaly" object defining *why* this is surprising and what baseline was violated.
 
-### Claude Code (CLI)
+### Phase 2: Hypothesize (`peircean_generate_hypotheses`)
+*   **Input**: The Anomaly from Phase 1.
+*   **Output**: A list of distinct, falsifiable hypotheses (A's). Each must explain the anomaly if true.
 
-```bash
-claude mcp add peircean -- python -m peircean.mcp.server
-```
+### Phase 3: Evaluate (`peircean_evaluate_via_ibe`)
+*   **Input**: The Hypotheses from Phase 2.
+*   **Output**: A final Verdict selected via **Inference to Best Explanation (IBE)**. This phase can optionally convene a "Council of Critics" to debate the options.
 
-### Other Clients (Windsurf, Gemini)
+---
 
-Use command `python` and args `["-m", "peircean.mcp.server"]`.
+## ⚡ Case Study: The "Lumping" Problem
 
-## Supported Domains
+**Scenario**: A "defunct" military satellite collides with a commercial station. Flight logs show a controlled burn 10s before impact.
 
-| Domain | Hypothesis Templates |
-|--------|---------------------|
-| `general` | Causal, systemic, human factors |
-| `financial` | Market microstructure, information asymmetry |
-| `legal` | Statutory interpretation, precedent conflicts |
-| `medical` | Differential diagnosis, drug interactions |
-| `technical` | Race conditions, resource exhaustion |
-| `scientific` | Measurement error, confounding variables |
+*   **Standard LLM**: "It was likely a malfunction or a hidden military test." (Lumps distinct ideas together, vague).
+*   **Peircean Harness**:
+    1.  **H1 (Attack)**: "Sleeper weapon activated." -> **Prediction**: Check for uplink signals at T-10s.
+    2.  **H2 (Glitch)**: "Deorbit script misfire." -> **Prediction**: Check code for specific trigger conditions.
+    *   **Verdict**: Investigate H1 first because it explains the *vector* (steering into target), whereas H2 only explains the *burn*.
+
+---
 
 ## Documentation
 
@@ -248,21 +133,11 @@ Use command `python` and args `["-m", "peircean.mcp.server"]`.
 - [MCP Integration](docs/guides/mcp-integration.md)
 - [Abductive Reasoning Concepts](docs/concepts/abductive-reasoning.md)
 
-### Examples
-
-- [Kubernetes Anomaly](docs/examples/kubernetes-anomaly.md) - CPU/latency inverse correlation
-- [API Latency Anomaly](docs/examples/api-latency-anomaly.md) - 10x latency spike with normal metrics
-
 ## Contributing
 
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Changelog](CHANGELOG.md)
 
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-
----
-
-*"Abduction is the process of forming explanatory hypotheses. It is the only logical operation which introduces any new idea."* — C.S. Peirce
