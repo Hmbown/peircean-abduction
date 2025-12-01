@@ -87,7 +87,7 @@ Examples:
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
-    parser.add_argument("--version", action="version", version="peircean-abduction 0.2.0")
+    parser.add_argument("--version", action="version", version="peircean-abduction 1.1.0")
 
     return parser
 
