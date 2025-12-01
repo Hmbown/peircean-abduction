@@ -50,7 +50,7 @@ class TestGetMcpConfig:
         assert "mcpServers" in config
         assert "peircean" in config["mcpServers"]
         assert "command" in config["mcpServers"]["peircean"]
-        assert config["mcpServers"]["peircean"]["command"] == "python"
+        assert config["mcpServers"]["peircean"]["command"] == sys.executable
         assert "-m" in config["mcpServers"]["peircean"]["args"]
         assert "peircean.mcp.server" in config["mcpServers"]["peircean"]["args"]
 
@@ -84,7 +84,7 @@ class TestMergeConfigs:
         }
         new = get_mcp_config()
         result = merge_configs(existing, new)
-        assert result["mcpServers"]["peircean"]["command"] == "python"
+        assert result["mcpServers"]["peircean"]["command"] == sys.executable
 
     def test_merge_preserves_other_top_level_keys(self) -> None:
         existing: dict[str, object] = {
