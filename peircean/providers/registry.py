@@ -371,8 +371,8 @@ class OllamaProvider(BaseProvider):
 
             # Configure base URL if provided
             base_url = self.config.get("base_url", "http://localhost:11434")
-            # Type ignore because ollama module is dynamically typed
-            ollama.host = base_url  # type: ignore[attr-defined]
+            # Use setattr to avoid mypy errors with dynamic attributes
+            setattr(ollama, "host", base_url)
             return ollama
         except ImportError:
             raise ImportError(
