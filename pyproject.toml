@@ -69,7 +69,7 @@ peircean-bench = "peircean.benchmarks.runner:main"
 
 [project.urls]
 Homepage = "https://github.com/Hmbown/peircean-abduction"
-Documentation = "https://github.com/Hmbown/peircean-abduction/tree/main/docs"
+Documentation = "https://github.com/Hmbown/peircean-abduction/blob/main/docs/PEIRCEAN_SPEC.md"
 Repository = "https://github.com/Hmbown/peircean-abduction"
 Issues = "https://github.com/Hmbown/peircean-abduction/issues"
 
@@ -108,6 +108,11 @@ disallow_incomplete_defs = true
 [[tool.mypy.overrides]]
 module = ["mcp.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "examples.*"]
+disallow_untyped_defs = false
+check_untyped_defs = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

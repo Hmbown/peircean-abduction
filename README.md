@@ -56,6 +56,12 @@ cd peircean-abduction
 python examples/quickstart.py
 ```
 
+### 3. Verify Installation
+Ensure the MCP server is correctly configured by running the validation script:
+```bash
+python scripts/validate_mcp.py
+```
+
 **Full Scenario (International Law):**
 ```bash
 python examples/international_law.py
@@ -128,6 +134,8 @@ The harness enforces a strict 3-step logical flow:
 
 ## Documentation
 
+- [**Peircean Specification**](docs/PEIRCEAN_SPEC.md) - Detailed breakdown of the 3-Phase Loop and JSON Schemas.
+- [**MCP Agent Instructions**](docs/guides/mcp_instructions.md) - Guide for AI Agents using the tools.
 - [Quick Start Guide](docs/getting-started/quickstart.md)
 - [User Guide](docs/guides/user-guide.md)
 - [MCP Integration](docs/guides/mcp-integration.md)

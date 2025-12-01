@@ -19,7 +19,7 @@ from peircean.mcp.setup import (
 class TestGetDefaultConfigPath:
     """Test config path detection for different platforms."""
 
-    def test_macos_path(self):
+    def test_macos_path(self) -> None:
         with patch.object(sys, "platform", "darwin"):
             path = get_default_config_path()
             assert "Library" in str(path)
@@ -27,14 +27,14 @@ class TestGetDefaultConfigPath:
             assert "Claude" in str(path)
             assert path.name == "claude_desktop_config.json"
 
-    def test_windows_path(self):
+    def test_windows_path(self) -> None:
         with patch.object(sys, "platform", "win32"):
             with patch.dict("os.environ", {"APPDATA": "C:\\Users\\Test\\AppData\\Roaming"}):
                 path = get_default_config_path()
                 assert "Claude" in str(path)
                 assert path.name == "claude_desktop_config.json"
 
-    def test_linux_path(self):
+    def test_linux_path(self) -> None:
         with patch.object(sys, "platform", "linux"):
             path = get_default_config_path()
             assert ".config" in str(path)
@@ -45,7 +45,7 @@ class TestGetDefaultConfigPath:
 class TestGetMcpConfig:
     """Test MCP configuration generation."""
 
-    def test_config_structure(self):
+    def test_config_structure(self) -> None:
         config = get_mcp_config()
         assert "mcpServers" in config
         assert "peircean" in config["mcpServers"]
@@ -58,15 +58,15 @@ class TestGetMcpConfig:
 class TestMergeConfigs:
     """Test configuration merging logic."""
 
-    def test_merge_empty_existing(self):
-        existing = {}
+    def test_merge_empty_existing(self) -> None:
+        existing: dict[str, object] = {}
         new = get_mcp_config()
         result = merge_configs(existing, new)
         assert "mcpServers" in result
         assert "peircean" in result["mcpServers"]
 
-    def test_merge_preserves_other_servers(self):
-        existing = {
+    def test_merge_preserves_other_servers(self) -> None:
+        existing: dict[str, object] = {
             "mcpServers": {
                 "other-server": {"command": "node", "args": ["server.js"]},
             }
@@ -76,8 +76,8 @@ class TestMergeConfigs:
         assert "other-server" in result["mcpServers"]
         assert "peircean" in result["mcpServers"]
 
-    def test_merge_updates_existing_peircean(self):
-        existing = {
+    def test_merge_updates_existing_peircean(self) -> None:
+        existing: dict[str, object] = {
             "mcpServers": {
                 "peircean": {"command": "old-command", "args": []},
             }
@@ -86,8 +86,8 @@ class TestMergeConfigs:
         result = merge_configs(existing, new)
         assert result["mcpServers"]["peircean"]["command"] == "python"
 
-    def test_merge_preserves_other_top_level_keys(self):
-        existing = {
+    def test_merge_preserves_other_top_level_keys(self) -> None:
+        existing: dict[str, object] = {
             "someOtherSetting": True,
             "mcpServers": {},
         }
@@ -99,7 +99,7 @@ class TestMergeConfigs:
 class TestSetupMcp:
     """Test setup_mcp function."""
 
-    def test_dry_run_new_config(self, tmp_path: Path):
+    def test_dry_run_new_config(self, tmp_path: Path) -> None:
         config_path = tmp_path / "new_config.json"
         result = setup_mcp(config_path=config_path, write=False)
 
@@ -111,7 +111,7 @@ class TestSetupMcp:
         # Should not have written file
         assert not config_path.exists()
 
-    def test_write_new_config(self, tmp_path: Path):
+    def test_write_new_config(self, tmp_path: Path) -> None:
         config_path = tmp_path / "new_config.json"
         result = setup_mcp(config_path=config_path, write=True)
 
@@ -123,13 +123,13 @@ class TestSetupMcp:
             written = f.read()
         assert json.loads(written) == json.loads(result)
 
-    def test_write_creates_parent_directories(self, tmp_path: Path):
+    def test_write_creates_parent_directories(self, tmp_path: Path) -> None:
         config_path = tmp_path / "nested" / "dir" / "config.json"
         setup_mcp(config_path=config_path, write=True)
 
         assert config_path.exists()
 
-    def test_merge_existing_config(self, tmp_path: Path):
+    def test_merge_existing_config(self, tmp_path: Path) -> None:
         config_path = tmp_path / "existing_config.json"
         existing_config = {"mcpServers": {"other": {"command": "test"}}}
         with open(config_path, "w") as f:
@@ -141,7 +141,7 @@ class TestSetupMcp:
         assert "other" in config["mcpServers"]
         assert "peircean" in config["mcpServers"]
 
-    def test_backup_created(self, tmp_path: Path):
+    def test_backup_created(self, tmp_path: Path) -> None:
         config_path = tmp_path / "config.json"
         with open(config_path, "w") as f:
             json.dump({"old": "config"}, f)
@@ -155,7 +155,7 @@ class TestSetupMcp:
             backup_content = json.load(f)
         assert backup_content == {"old": "config"}
 
-    def test_no_backup_when_disabled(self, tmp_path: Path):
+    def test_no_backup_when_disabled(self, tmp_path: Path) -> None:
         config_path = tmp_path / "config.json"
         with open(config_path, "w") as f:
             json.dump({"old": "config"}, f)
@@ -165,7 +165,7 @@ class TestSetupMcp:
         backup_path = config_path.with_suffix(".json.bak")
         assert not backup_path.exists()
 
-    def test_default_path_used_when_none(self):
+    def test_default_path_used_when_none(self) -> None:
         mock_path = MagicMock()
         mock_path.return_value = Path("/fake/path/config.json")
         # Dry run so we don't actually write
@@ -176,7 +176,7 @@ class TestSetupMcp:
 class TestMain:
     """Test CLI entry point."""
 
-    def test_dry_run_output(self, capsys):
+    def test_dry_run_output(self, capsys) -> None:  # type: ignore
         main(args_list=[])
 
         captured = capsys.readouterr()
@@ -185,7 +185,7 @@ class TestMain:
         # Should suggest how to apply
         assert "peircean-setup-mcp --write" in captured.out
 
-    def test_json_flag(self, capsys):
+    def test_json_flag(self, capsys) -> None:  # type: ignore
         main(args_list=["--json"])
 
         captured = capsys.readouterr()
@@ -199,7 +199,7 @@ class TestMain:
         config = json.loads(json_str)
         assert "mcpServers" in config
 
-    def test_write_to_default_location(self, tmp_path: Path, capsys):
+    def test_write_to_default_location(self, tmp_path: Path, capsys) -> None:  # type: ignore
         config_path = tmp_path / "claude" / "config.json"
         mock_path = MagicMock(return_value=config_path)
 
@@ -209,7 +209,7 @@ class TestMain:
         captured = capsys.readouterr()
         assert "Wrote configuration" in captured.out
 
-    def test_write_to_custom_path(self, tmp_path: Path, capsys):
+    def test_write_to_custom_path(self, tmp_path: Path, capsys) -> None:  # type: ignore
         config_path = tmp_path / "custom_config.json"
 
         main(args_list=["--write", str(config_path)])
@@ -218,7 +218,7 @@ class TestMain:
         captured = capsys.readouterr()
         assert "Wrote configuration" in captured.out
 
-    def test_no_backup_flag(self, tmp_path: Path):
+    def test_no_backup_flag(self, tmp_path: Path) -> None:
         config_path = tmp_path / "config.json"
         with open(config_path, "w") as f:
             json.dump({"existing": True}, f)
@@ -228,7 +228,7 @@ class TestMain:
         backup_path = config_path.with_suffix(".json.bak")
         assert not backup_path.exists()
 
-    def test_write_with_json_flag(self, tmp_path: Path, capsys):
+    def test_write_with_json_flag(self, tmp_path: Path, capsys) -> None:  # type: ignore
         config_path = tmp_path / "config.json"
 
         main(args_list=["--write", str(config_path), "--json"])

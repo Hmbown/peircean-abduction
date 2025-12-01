@@ -16,7 +16,11 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import sys
+
+# Add project root to path so we can import peircean
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # =============================================================================
 # TEST CONFIGURATION
@@ -45,7 +49,7 @@ EXAMPLE_ANOMALY = {
         "domain": "technical",
         "context": ["No recent deployments", "Traffic is steady"],
         "key_features": ["Latency spike", "Normal CPU", "Normal memory"],
-        "surprise_source": "Violates expected correlation"
+        "surprise_source": "Violates expected correlation",
     }
 }
 
@@ -62,9 +66,9 @@ EXAMPLE_HYPOTHESES = {
                     "prediction": "DB connection count at max",
                     "test_method": "Check connection pool metrics",
                     "if_true": "Supports H1",
-                    "if_false": "Weakens H1"
+                    "if_false": "Weakens H1",
                 }
-            ]
+            ],
         },
         {
             "id": "H2",
@@ -77,10 +81,10 @@ EXAMPLE_HYPOTHESES = {
                     "prediction": "Network errors in logs",
                     "test_method": "Check application logs",
                     "if_true": "Supports H2",
-                    "if_false": "Weakens H2"
+                    "if_false": "Weakens H2",
                 }
-            ]
-        }
+            ],
+        },
     ]
 }
 
@@ -88,6 +92,7 @@ EXAMPLE_HYPOTHESES = {
 # =============================================================================
 # TEST UTILITIES
 # =============================================================================
+
 
 class TestResult:
     """Container for test results."""
@@ -114,14 +119,15 @@ class TestResult:
 
 def print_header(text: str) -> None:
     """Print a section header."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f" {text}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 # =============================================================================
 # TESTS
 # =============================================================================
+
 
 def test_imports() -> TestResult:
     """Test that all modules can be imported."""
@@ -129,6 +135,7 @@ def test_imports() -> TestResult:
 
     try:
         from peircean.mcp.server import SYSTEM_DIRECTIVE
+
         _ = SYSTEM_DIRECTIVE  # Verify it imported correctly
         result.ok("peircean.mcp.server imports successfully")
     except ImportError as e:
@@ -137,6 +144,7 @@ def test_imports() -> TestResult:
 
     try:
         from peircean.core.models import Domain, Hypothesis, SurpriseLevel
+
         _ = (Domain, Hypothesis, SurpriseLevel)  # Verify imports work
         result.ok("peircean.core.models imports successfully")
     except ImportError as e:
@@ -144,6 +152,7 @@ def test_imports() -> TestResult:
 
     try:
         from peircean.core.prompts import DOMAIN_GUIDANCE
+
         _ = DOMAIN_GUIDANCE  # Verify import works
         result.ok("peircean.core.prompts imports successfully")
     except ImportError as e:
@@ -161,10 +170,10 @@ def test_tool_registration() -> TestResult:
 
         # Get registered tools
         # FastMCP stores tools in _tool_manager
-        if hasattr(mcp, '_tool_manager'):
+        if hasattr(mcp, "_tool_manager"):
             tools = mcp._tool_manager._tools
             registered = list(tools.keys())
-        elif hasattr(mcp, 'tools'):
+        elif hasattr(mcp, "tools"):
             registered = list(mcp.tools.keys())
         else:
             # Try to get tools via list_tools
@@ -234,7 +243,7 @@ def test_observe_anomaly() -> TestResult:
         output = peircean_observe_anomaly(
             observation="Server latency spiked 10x but CPU/memory normal",
             context="No recent deployments",
-            domain="technical"
+            domain="technical",
         )
 
         # Parse output
@@ -339,9 +348,7 @@ def test_evaluate_via_ibe() -> TestResult:
 
         # Test without council
         output = peircean_evaluate_via_ibe(
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json,
-            use_council=False
+            anomaly_json=anomaly_json, hypotheses_json=hypotheses_json, use_council=False
         )
 
         data = json.loads(output)
@@ -363,9 +370,7 @@ def test_evaluate_via_ibe() -> TestResult:
 
         # Test with default council
         council_output = peircean_evaluate_via_ibe(
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json,
-            use_council=True
+            anomaly_json=anomaly_json, hypotheses_json=hypotheses_json, use_council=True
         )
 
         council_data = json.loads(council_output)
@@ -391,7 +396,7 @@ def test_evaluate_via_ibe() -> TestResult:
         custom_output = peircean_evaluate_via_ibe(
             anomaly_json=anomaly_json,
             hypotheses_json=hypotheses_json,
-            custom_council=custom_council
+            custom_council=custom_council,
         )
 
         custom_data = json.loads(custom_output)
@@ -402,7 +407,7 @@ def test_evaluate_via_ibe() -> TestResult:
         else:
             result.fail("Custom council members missing from prompt")
 
-        if "\"chef\": 0.0-1.0" in custom_prompt and "\"food_critic\": 0.0-1.0" in custom_prompt:
+        if '"chef": 0.0-1.0' in custom_prompt and '"food_critic": 0.0-1.0' in custom_prompt:
             result.ok("Custom council scores included in schema")
         else:
             result.fail("Custom council scores missing from schema")
@@ -425,9 +430,7 @@ def test_critic_evaluate() -> TestResult:
 
         # Test valid standard critic
         output = peircean_critic_evaluate(
-            critic="empiricist",
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json
+            critic="empiricist", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
         )
 
         data = json.loads(output)
@@ -444,9 +447,7 @@ def test_critic_evaluate() -> TestResult:
 
         # Test DYNAMIC critic
         dynamic_output = peircean_critic_evaluate(
-            critic="forensic_accountant",
-            anomaly_json=anomaly_json,
-            hypotheses_json=hypotheses_json
+            critic="forensic_accountant", anomaly_json=anomaly_json, hypotheses_json=hypotheses_json
         )
 
         dynamic_data = json.loads(dynamic_output)
@@ -479,7 +480,7 @@ def test_single_shot() -> TestResult:
             observation="Customer churn rate doubled in Q3",
             context="No price changes, NPS stable",
             domain="financial",
-            num_hypotheses=3
+            num_hypotheses=3,
         )
 
         data = json.loads(output)
@@ -595,6 +596,7 @@ def test_system_directive() -> TestResult:
 # =============================================================================
 # MAIN
 # =============================================================================
+
 
 def main() -> int:
     """Run all verification tests."""
