@@ -67,19 +67,18 @@ def select_provider() -> Provider:
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
-    if Table and Console:
-        console = Console()
-        table = Table(title="Available Providers")
-        table.add_column("Choice", style="cyan", width=8)
-        table.add_column("Provider", style="white", width=15)
-        table.add_column("Description", style="dim", width=40)
+    console = Console()
+    table = Table(title="Available Providers")
+    table.add_column("Choice", style="cyan", width=8)
+    table.add_column("Provider", style="white", width=15)
+    table.add_column("Description", style="dim", width=40)
 
-        for i, provider_name in enumerate(providers, 1):
-            provider_info = registry.get_provider_info(provider_name)
-            if provider_info:
-                table.add_row(str(i), provider_name, provider_info.description)
+    for i, provider_name in enumerate(providers, 1):
+        provider_info = registry.get_provider_info(provider_name)
+        if provider_info:
+            table.add_row(str(i), provider_name, provider_info.description)
 
-        console.print(table)
+    console.print(table)
 
     # Auto-detect if possible
     detected = detect_provider_from_env()

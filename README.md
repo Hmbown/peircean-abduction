@@ -61,12 +61,40 @@ PEIRCEAN_INTERACTIVE_MODE=false # Set to true to let the tool call the LLM direc
 
 ## 📦 Supported Models
 
-*   **Anthropic:** Claude 3.5 Sonnet (Recommended), Claude 3 Opus, Claude 3 Haiku
-*   **OpenAI:** GPT-4o, GPT-4 Turbo
-*   **Gemini:** Gemini 1.5 Pro
-*   **Ollama:** Llama 3, Mistral
+*   **Anthropic:** Claude 3.5 Sonnet (Recommended), Claude 3.5 Haiku, Claude 3 Opus
+*   **OpenAI:** GPT-4o, GPT-4o Mini, o1-preview
+*   **Gemini:** Gemini 1.5 Pro, Gemini 1.5 Flash
+*   **Ollama:** Llama 3.2, Llama 3.1, Mistral, Qwen 2.5
 
-## 📚 Documentation
+## 💡 Example Usage
+
+Here is how you might use Peircean Abduction to analyze a system anomaly:
+
+```bash
+# 1. Install
+pip install peircean-abduction
+
+# 2. Configure (optional, or just use defaults)
+export PEIRCEAN_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=sk-...
+
+# 3. Run Abduction
+peircean "Production database latency spiked to 500ms but CPU load dropped to 10%."
+```
+
+**Output:**
+
+> **Hypothesis 1: The I/O Bottleneck**
+> The database is waiting on disk I/O or network storage, causing high latency despite low CPU usage.
+> *Likelihood: High*
+>
+> **Hypothesis 2: The Lock Contention**
+> A long-running transaction is holding locks, blocking other queries and causing them to wait.
+> *Likelihood: Medium*
+>
+> **Hypothesis 3: The Connection Pool Exhaustion**
+> The application is waiting for available database connections, perceived as latency.
+> *Likelihood: Medium*
 
 *   [Installation Guide](docs/getting-started/installation.md)
 *   [Configuration Guide](docs/guides/configuration.md)

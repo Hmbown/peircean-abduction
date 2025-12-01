@@ -231,7 +231,6 @@ def validate_environment() -> dict[str, Any]:
         results["issues"].append("No API keys found in environment variables")
         results["valid"] = False
 
-
     return results
 
 

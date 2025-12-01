@@ -247,7 +247,9 @@ class OpenAIProvider(BaseProvider):
                 organization=self.config.get("organization"),
             )
         except ImportError:
-            raise ImportError("openai package not installed. Install with: pip install openai") from None
+            raise ImportError(
+                "openai package not installed. Install with: pip install openai"
+            ) from None
 
     def generate_prompt(
         self,
@@ -370,10 +372,12 @@ class OllamaProvider(BaseProvider):
             # Configure base URL if provided
             base_url = self.config.get("base_url", "http://localhost:11434")
             # Type ignore because ollama module is dynamically typed
-            ollama.host = base_url  # type: ignore
+            ollama.host = base_url  # type: ignore[attr-defined]
             return ollama
         except ImportError:
-            raise ImportError("ollama package not installed. Install with: pip install ollama") from None
+            raise ImportError(
+                "ollama package not installed. Install with: pip install ollama"
+            ) from None
 
     def generate_prompt(
         self,
