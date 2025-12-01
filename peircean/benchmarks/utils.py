@@ -9,12 +9,11 @@ from __future__ import annotations
 import json
 import statistics
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from rich.console import Console
-from rich.progress import Progress, TaskID
 from rich.table import Table
 
 console = Console()
@@ -29,8 +28,8 @@ class BenchmarkResult:
     prompt_length: int
     generation_time_seconds: float
     success: bool
-    error_message: Optional[str] = None
-    additional_metrics: Optional[Dict[str, Any]] = None
+    error_message: str | None = None
+    additional_metrics: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if self.additional_metrics is None:
@@ -58,9 +57,9 @@ def measure_prompt_generation(
     observation: str,
     domain: str = "general",
     num_hypotheses: int = 5,
-    context: Optional[Dict[str, Any]] = None,
-    use_council: bool = True
-) -> Tuple[str, float]:
+    context: dict[str, Any] | None = None,
+    use_council: bool = True,
+) -> tuple[str, float]:
     """
     Measure prompt generation performance.
 
@@ -78,10 +77,7 @@ def measure_prompt_generation(
 
     start_time = time.time()
     prompt = abduction_prompt(
-        observation=observation,
-        context=context,
-        domain=domain,
-        num_hypotheses=num_hypotheses
+        observation=observation, context=context, domain=domain, num_hypotheses=num_hypotheses
     )
     end_time = time.time()
 
@@ -95,8 +91,8 @@ def run_benchmark_scenario(
     observation: str,
     domain: str = "general",
     num_hypotheses: int = 5,
-    context: Optional[Dict[str, Any]] = None,
-    use_council: bool = True
+    context: dict[str, Any] | None = None,
+    use_council: bool = True,
 ) -> BenchmarkResult:
     """
     Run a single benchmark scenario.
@@ -119,7 +115,7 @@ def run_benchmark_scenario(
             domain=domain,
             num_hypotheses=num_hypotheses,
             context=context,
-            use_council=use_council
+            use_council=use_council,
         )
 
         return BenchmarkResult(
@@ -127,7 +123,7 @@ def run_benchmark_scenario(
             provider_name=provider_name,
             prompt_length=len(prompt),
             generation_time_seconds=generation_time,
-            success=True
+            success=True,
         )
 
     except Exception as e:
@@ -137,11 +133,11 @@ def run_benchmark_scenario(
             prompt_length=0,
             generation_time_seconds=0.0,
             success=False,
-            error_message=str(e)
+            error_message=str(e),
         )
 
 
-def calculate_summary(results: List[BenchmarkResult]) -> BenchmarkSummary:
+def calculate_summary(results: list[BenchmarkResult]) -> BenchmarkSummary:
     """Calculate summary statistics for benchmark results."""
     if not results:
         raise ValueError("No results to summarize")
@@ -165,7 +161,7 @@ def calculate_summary(results: List[BenchmarkResult]) -> BenchmarkSummary:
             min_generation_time=0.0,
             max_generation_time=0.0,
             std_deviation=0.0,
-            success_rate=0.0
+            success_rate=0.0,
         )
 
     generation_times = [r.generation_time_seconds for r in successful_results]
@@ -182,11 +178,11 @@ def calculate_summary(results: List[BenchmarkResult]) -> BenchmarkSummary:
         min_generation_time=min(generation_times),
         max_generation_time=max(generation_times),
         std_deviation=statistics.stdev(generation_times) if len(generation_times) > 1 else 0.0,
-        success_rate=len(successful_results) / len(results)
+        success_rate=len(successful_results) / len(results),
     )
 
 
-def print_results_table(summaries: List[BenchmarkSummary]) -> None:
+def print_results_table(summaries: list[BenchmarkSummary]) -> None:
     """Print a formatted table of benchmark results."""
     table = Table(title="Benchmark Results Summary")
     table.add_column("Scenario", style="cyan", no_wrap=True)
@@ -214,30 +210,30 @@ def print_results_table(summaries: List[BenchmarkSummary]) -> None:
             avg_time,
             min_time,
             max_time,
-            avg_length
+            avg_length,
         )
 
     console.print(table)
 
 
-def save_results_json(results: List[BenchmarkResult], filepath: Path) -> None:
+def save_results_json(results: list[BenchmarkResult], filepath: Path) -> None:
     """Save benchmark results to JSON file."""
     data = {
         "results": [asdict(result) for result in results],
         "summary": {
             "total_results": len(results),
             "successful_results": len([r for r in results if r.success]),
-            "failed_results": len([r for r in results if not r.success])
-        }
+            "failed_results": len([r for r in results if not r.success]),
+        },
     }
 
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(data, f, indent=2)
 
 
-def load_results_json(filepath: Path) -> List[BenchmarkResult]:
+def load_results_json(filepath: Path) -> list[BenchmarkResult]:
     """Load benchmark results from JSON file."""
-    with open(filepath, 'r') as f:
+    with open(filepath) as f:
         data = json.load(f)
 
     results = []
@@ -248,7 +244,9 @@ def load_results_json(filepath: Path) -> List[BenchmarkResult]:
     return results
 
 
-def compare_results(results_a: List[BenchmarkResult], results_b: List[BenchmarkResult]) -> Dict[str, Any]:
+def compare_results(
+    results_a: list[BenchmarkResult], results_b: list[BenchmarkResult]
+) -> dict[str, Any]:
     """Compare two sets of benchmark results."""
     if not results_a or not results_b:
         return {"error": "Both result sets must be non-empty"}
@@ -257,7 +255,9 @@ def compare_results(results_a: List[BenchmarkResult], results_b: List[BenchmarkR
     summary_b = calculate_summary(results_b)
 
     # Calculate performance differences
-    time_improvement = (summary_a.avg_generation_time - summary_b.avg_generation_time) / summary_a.avg_generation_time
+    time_improvement = (
+        summary_a.avg_generation_time - summary_b.avg_generation_time
+    ) / summary_a.avg_generation_time
     length_diff = summary_b.avg_prompt_length - summary_a.avg_prompt_length
     success_rate_diff = (summary_b.success_rate - summary_a.success_rate) * 100
 
@@ -267,14 +267,14 @@ def compare_results(results_a: List[BenchmarkResult], results_b: List[BenchmarkR
         "improvements": {
             "time_improvement_percent": time_improvement * 100,
             "prompt_length_difference": length_diff,
-            "success_rate_improvement_percent": success_rate_diff
+            "success_rate_improvement_percent": success_rate_diff,
         },
         "better_performance": summary_b.avg_generation_time < summary_a.avg_generation_time,
-        "higher_success_rate": summary_b.success_rate > summary_a.success_rate
+        "higher_success_rate": summary_b.success_rate > summary_a.success_rate,
     }
 
 
-def get_system_info() -> Dict[str, Any]:
+def get_system_info() -> dict[str, Any]:
     """Get system information for benchmarking context."""
     import platform
     import sys
@@ -284,26 +284,24 @@ def get_system_info() -> Dict[str, Any]:
         "platform": platform.platform(),
         "processor": platform.processor(),
         "architecture": platform.architecture(),
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
 
 def validate_scenario_expectations(
-    result: BenchmarkResult,
-    expected_min_prompt_length: int,
-    expected_max_time_seconds: float
-) -> Dict[str, bool]:
+    result: BenchmarkResult, expected_min_prompt_length: int, expected_max_time_seconds: float
+) -> dict[str, bool]:
     """Validate benchmark result against scenario expectations."""
     if not result.success:
         return {"prompt_length_valid": False, "time_valid": False}
 
     return {
         "prompt_length_valid": result.prompt_length >= expected_min_prompt_length,
-        "time_valid": result.generation_time_seconds <= expected_max_time_seconds
+        "time_valid": result.generation_time_seconds <= expected_max_time_seconds,
     }
 
 
-def create_progress_report(scenarios: List[str], providers: List[str]) -> str:
+def create_progress_report(scenarios: list[str], providers: list[str]) -> str:
     """Create a progress report for benchmark execution."""
     total_scenarios = len(scenarios)
     total_providers = len(providers)
@@ -317,6 +315,6 @@ Scenarios to test: {total_scenarios}
 Providers to test: {total_providers}
 Total benchmarks: {total_benchmarks}
 
-Scenarios: {', '.join(scenarios)}
-Providers: {', '.join(providers)}
+Scenarios: {", ".join(scenarios)}
+Providers: {", ".join(providers)}
 """

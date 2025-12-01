@@ -13,35 +13,33 @@ Design principles:
 
 from __future__ import annotations
 
-import importlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union
-
-from ..config import Provider
+from typing import Any
 
 
 @dataclass
 class ProviderCapabilities:
     """Capabilities and features supported by a provider."""
+
     supports_streaming: bool = True
     supports_functions: bool = True
     supports_system_messages: bool = True
-    max_tokens: Optional[int] = None
-    default_model: Optional[str] = None
+    max_tokens: int | None = None
+    default_model: str | None = None
 
 
 @dataclass
 class ProviderInfo:
     """Information about a provider."""
+
     name: str
     display_name: str
     description: str
     capabilities: ProviderCapabilities
-    dependency_name: Optional[str] = None
-    env_api_key: Optional[str] = None
-    examples: Optional[List[str]] = None
+    dependency_name: str | None = None
+    env_api_key: str | None = None
+    examples: list[str] | None = None
 
     def __post_init__(self) -> None:
         if self.examples is None:
@@ -51,7 +49,7 @@ class ProviderInfo:
 class BaseProvider(ABC):
     """Abstract base class for LLM providers."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.client = None
         self._initialized = False
@@ -96,7 +94,7 @@ class BaseProvider(ABC):
         observation: str,
         domain: str = "general",
         num_hypotheses: int = 5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         use_council: bool = True,
     ) -> str:
         """
@@ -110,11 +108,7 @@ class BaseProvider(ABC):
         """
         pass
 
-    def generate_completion(
-        self,
-        prompt: str,
-        **kwargs: Any
-    ) -> Optional[str]:
+    def generate_completion(self, prompt: str, **kwargs: Any) -> str | None:
         """
         Generate completion using the provider (requires API integration).
 
@@ -134,15 +128,11 @@ class BaseProvider(ABC):
         except Exception:
             return None
 
-    def _generate_completion_impl(
-        self,
-        prompt: str,
-        **kwargs: Any
-    ) -> str:
+    def _generate_completion_impl(self, prompt: str, **kwargs: Any) -> str:
         """Implementation-specific completion generation."""
         raise NotImplementedError("Direct completion not implemented for this provider")
 
-    def validate_config(self) -> List[str]:
+    def validate_config(self) -> list[str]:
         """
         Validate provider configuration.
 
@@ -181,25 +171,29 @@ class AnthropicProvider(BaseProvider):
     def _create_client(self) -> Any:
         try:
             from anthropic import Anthropic
+
             return Anthropic(
                 api_key=self.config["api_key"],
                 base_url=self.config.get("base_url"),
                 timeout=self.config.get("timeout", 60),
             )
         except ImportError:
-            raise ImportError("anthropic package not installed. Install with: pip install anthropic")
+            raise ImportError(
+                "anthropic package not installed. Install with: pip install anthropic"
+            ) from None
 
     def generate_prompt(
         self,
         observation: str,
         domain: str = "general",
         num_hypotheses: int = 5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         use_council: bool = True,
     ) -> str:
         """Generate abductive reasoning prompt for Claude."""
         # Import the existing prompt generation logic
         from ..core import abduction_prompt
+
         return abduction_prompt(
             observation=observation,
             domain=domain,
@@ -245,6 +239,7 @@ class OpenAIProvider(BaseProvider):
     def _create_client(self) -> Any:
         try:
             from openai import OpenAI
+
             return OpenAI(
                 api_key=self.config["api_key"],
                 base_url=self.config.get("base_url"),
@@ -252,18 +247,19 @@ class OpenAIProvider(BaseProvider):
                 organization=self.config.get("organization"),
             )
         except ImportError:
-            raise ImportError("openai package not installed. Install with: pip install openai")
+            raise ImportError("openai package not installed. Install with: pip install openai") from None
 
     def generate_prompt(
         self,
         observation: str,
         domain: str = "general",
         num_hypotheses: int = 5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         use_council: bool = True,
     ) -> str:
         """Generate abductive reasoning prompt for GPT."""
         from ..core import abduction_prompt
+
         return abduction_prompt(
             observation=observation,
             domain=domain,
@@ -307,21 +303,25 @@ class GeminiProvider(BaseProvider):
     def _create_client(self) -> Any:
         try:
             import google.generativeai as genai
+
             genai.configure(api_key=self.config["api_key"])
             return genai
         except ImportError:
-            raise ImportError("google-generativeai package not installed. Install with: pip install google-generativeai")
+            raise ImportError(
+                "google-generativeai package not installed. Install with: pip install google-generativeai"
+            ) from None
 
     def generate_prompt(
         self,
         observation: str,
         domain: str = "general",
         num_hypotheses: int = 5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         use_council: bool = True,
     ) -> str:
         """Generate abductive reasoning prompt for Gemini."""
         from ..core import abduction_prompt
+
         return abduction_prompt(
             observation=observation,
             domain=domain,
@@ -338,7 +338,7 @@ class GeminiProvider(BaseProvider):
             generation_config={
                 "temperature": kwargs.get("temperature", 0.7),
                 "max_output_tokens": kwargs.get("max_tokens", 2048),
-            }
+            },
         )
         return str(response.text)
 
@@ -366,24 +366,26 @@ class OllamaProvider(BaseProvider):
     def _create_client(self) -> Any:
         try:
             import ollama
+
             # Configure base URL if provided
             base_url = self.config.get("base_url", "http://localhost:11434")
             # Type ignore because ollama module is dynamically typed
             ollama.host = base_url  # type: ignore
             return ollama
         except ImportError:
-            raise ImportError("ollama package not installed. Install with: pip install ollama")
+            raise ImportError("ollama package not installed. Install with: pip install ollama") from None
 
     def generate_prompt(
         self,
         observation: str,
         domain: str = "general",
         num_hypotheses: int = 5,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         use_council: bool = True,
     ) -> str:
         """Generate abductive reasoning prompt for Ollama."""
         from ..core import abduction_prompt
+
         return abduction_prompt(
             observation=observation,
             domain=domain,
@@ -400,7 +402,7 @@ class OllamaProvider(BaseProvider):
             options={
                 "temperature": kwargs.get("temperature", 0.7),
                 "num_predict": kwargs.get("max_tokens", 2048),
-            }
+            },
         )
         return str(response["message"]["content"])
 
@@ -409,18 +411,18 @@ class ProviderRegistry:
     """Registry for managing LLM providers."""
 
     def __init__(self) -> None:
-        self._providers: Dict[str, Type[BaseProvider]] = {
+        self._providers: dict[str, type[BaseProvider]] = {
             "anthropic": AnthropicProvider,
             "openai": OpenAIProvider,
             "gemini": GeminiProvider,
             "ollama": OllamaProvider,
         }
 
-    def get_available_providers(self) -> List[str]:
+    def get_available_providers(self) -> list[str]:
         """Get list of available providers."""
         return list(self._providers.keys())
 
-    def get_provider_info(self, provider_name: str) -> Optional[ProviderInfo]:
+    def get_provider_info(self, provider_name: str) -> ProviderInfo | None:
         """Get information about a provider."""
         provider_class = self._providers.get(provider_name)
         if provider_class:
@@ -429,14 +431,14 @@ class ProviderRegistry:
             return dummy_provider.get_info()
         return None
 
-    def create_provider(self, provider_name: str, config: Dict[str, Any]) -> Optional[BaseProvider]:
+    def create_provider(self, provider_name: str, config: dict[str, Any]) -> BaseProvider | None:
         """Create a provider instance."""
         provider_class = self._providers.get(provider_name)
         if provider_class:
             return provider_class(config)
         return None
 
-    def validate_provider_config(self, provider_name: str, config: Dict[str, Any]) -> List[str]:
+    def validate_provider_config(self, provider_name: str, config: dict[str, Any]) -> list[str]:
         """Validate provider configuration."""
         provider = self.create_provider(provider_name, config)
         if provider:
@@ -447,6 +449,7 @@ class ProviderRegistry:
         """Get a fallback provider when none is specified."""
         # Try to detect from environment
         from ..utils.env import detect_provider_from_env
+
         detected = detect_provider_from_env()
         if detected:
             return detected
@@ -456,7 +459,7 @@ class ProviderRegistry:
 
 
 # Global registry instance
-_registry: Optional[ProviderRegistry] = None
+_registry: ProviderRegistry | None = None
 
 
 def get_provider_registry() -> ProviderRegistry:
@@ -467,13 +470,13 @@ def get_provider_registry() -> ProviderRegistry:
     return _registry
 
 
-def get_provider_client(provider_name: str, config: Dict[str, Any]) -> Optional[BaseProvider]:
+def get_provider_client(provider_name: str, config: dict[str, Any]) -> BaseProvider | None:
     """Get a provider client."""
     registry = get_provider_registry()
     return registry.create_provider(provider_name, config)
 
 
-def validate_provider_config(provider_name: str, config: Dict[str, Any]) -> List[str]:
+def validate_provider_config(provider_name: str, config: dict[str, Any]) -> list[str]:
     """Validate provider configuration."""
     registry = get_provider_registry()
     return registry.validate_provider_config(provider_name, config)

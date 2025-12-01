@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..config import get_config
 from ..providers import get_provider_client, get_provider_registry
@@ -23,8 +23,8 @@ class ProviderInfo:
     available: bool
     configured: bool
     supports_interactive: bool
-    configuration: Dict[str, Any]
-    error_message: Optional[str] = None
+    configuration: dict[str, Any]
+    error_message: str | None = None
 
 
 def test_provider_availability(provider_name: str) -> ProviderInfo:
@@ -51,7 +51,7 @@ def test_provider_availability(provider_name: str) -> ProviderInfo:
                 configured=False,
                 supports_interactive=False,
                 configuration={},
-                error_message="Provider not found in registry"
+                error_message="Provider not found in registry",
             )
 
         # Get provider configuration
@@ -68,7 +68,7 @@ def test_provider_availability(provider_name: str) -> ProviderInfo:
                 configured=False,
                 supports_interactive=False,
                 configuration=provider_config,
-                error_message="Failed to create provider client"
+                error_message="Failed to create provider client",
             )
 
         # Test if client is available
@@ -81,7 +81,7 @@ def test_provider_availability(provider_name: str) -> ProviderInfo:
             configured=True,
             supports_interactive=config.interactive_mode,
             configuration=provider_config,
-            error_message=None if is_available else "Provider not available (configuration issue)"
+            error_message=None if is_available else "Provider not available (configuration issue)",
         )
 
     except Exception as e:
@@ -92,13 +92,13 @@ def test_provider_availability(provider_name: str) -> ProviderInfo:
             configured=False,
             supports_interactive=False,
             configuration={},
-            error_message=str(e)
+            error_message=str(e),
         )
 
 
-def test_all_providers() -> List[ProviderInfo]:
+def test_all_providers() -> list[ProviderInfo]:
     """Test all available providers."""
-    config = get_config()
+
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
@@ -115,10 +115,10 @@ def benchmark_provider_prompt_generation(
     observation: str,
     domain: str = "general",
     num_hypotheses: int = 5,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     use_council: bool = True,
-    num_runs: int = 3
-) -> Dict[str, Any]:
+    num_runs: int = 3,
+) -> dict[str, Any]:
     """
     Benchmark prompt generation for a specific provider.
 
@@ -144,7 +144,7 @@ def benchmark_provider_prompt_generation(
                 "provider": provider_name,
                 "success": False,
                 "error": "Provider not available",
-                "runs": []
+                "runs": [],
             }
 
         # Run multiple benchmarks
@@ -157,18 +157,20 @@ def benchmark_provider_prompt_generation(
                 domain=domain,
                 num_hypotheses=num_hypotheses,
                 context=context,
-                use_council=use_council
+                use_council=use_council,
             )
 
             end_time = time.time()
             generation_time = end_time - start_time
 
-            runs.append({
-                "run": i + 1,
-                "prompt_length": len(prompt),
-                "generation_time_seconds": generation_time,
-                "success": True
-            })
+            runs.append(
+                {
+                    "run": i + 1,
+                    "prompt_length": len(prompt),
+                    "generation_time_seconds": generation_time,
+                    "success": True,
+                }
+            )
 
         # Calculate statistics
         generation_times = [r["generation_time_seconds"] for r in runs]
@@ -182,26 +184,21 @@ def benchmark_provider_prompt_generation(
             "min_generation_time": min(generation_times),
             "max_generation_time": max(generation_times),
             "avg_prompt_length": sum(prompt_lengths) / len(prompt_lengths),
-            "runs": runs
+            "runs": runs,
         }
 
     except Exception as e:
-        return {
-            "provider": provider_name,
-            "success": False,
-            "error": str(e),
-            "runs": []
-        }
+        return {"provider": provider_name, "success": False, "error": str(e), "runs": []}
 
 
 def benchmark_all_providers(
     observation: str,
     domain: str = "general",
     num_hypotheses: int = 5,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     use_council: bool = True,
-    num_runs: int = 3
-) -> Dict[str, Any]:
+    num_runs: int = 3,
+) -> dict[str, Any]:
     """
     Benchmark prompt generation across all available providers.
 
@@ -216,11 +213,11 @@ def benchmark_all_providers(
     Returns:
         Dictionary with results for all providers
     """
-    config = get_config()
+
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
-    results: Dict[str, Any] = {
+    results: dict[str, Any] = {
         "observation": observation,
         "domain": domain,
         "num_hypotheses": num_hypotheses,
@@ -230,8 +227,8 @@ def benchmark_all_providers(
         "summary": {
             "total_providers": len(providers),
             "successful_providers": 0,
-            "failed_providers": 0
-        }
+            "failed_providers": 0,
+        },
     }
 
     for provider_name in providers:
@@ -242,7 +239,7 @@ def benchmark_all_providers(
             num_hypotheses=num_hypotheses,
             context=context,
             use_council=use_council,
-            num_runs=num_runs
+            num_runs=num_runs,
         )
 
         results["providers"][provider_name] = provider_result
@@ -255,7 +252,7 @@ def benchmark_all_providers(
     return results
 
 
-def test_provider_configuration_completeness(provider_name: str) -> Dict[str, Any]:
+def test_provider_configuration_completeness(provider_name: str) -> dict[str, Any]:
     """
     Test configuration completeness for a specific provider.
 
@@ -266,7 +263,7 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
         Dictionary with configuration analysis
     """
     from ..providers import get_provider_registry
-    
+
     try:
         registry = get_provider_registry()
         provider_info = registry.get_provider_info(provider_name)
@@ -275,7 +272,6 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
         # Check environment variables
         env_vars = {}
         if provider_info and provider_info.env_api_key:
-            api_key_env = provider_info.env_api_key
             env_vars["api_key_set"] = bool(config.api_key)
 
         # Check required configuration fields
@@ -288,7 +284,9 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
             configuration_status[field] = bool(getattr(config, field, None))
 
         # Determine overall configuration status
-        api_key_configured = env_vars.get("api_key_set", True)  # Default to True for providers without API keys
+        api_key_configured = env_vars.get(
+            "api_key_set", True
+        )  # Default to True for providers without API keys
         other_fields_configured = all(configuration_status.values())
 
         return {
@@ -296,7 +294,7 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
             "api_key_configured": api_key_configured,
             "configuration_fields": configuration_status,
             "overall_configured": api_key_configured and other_fields_configured,
-            "missing_items": []
+            "missing_items": [],
         }
 
     except Exception as e:
@@ -306,7 +304,7 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
             "api_key_configured": False,
             "configuration_fields": {},
             "overall_configured": False,
-            "missing_items": ["Configuration check failed"]
+            "missing_items": ["Configuration check failed"],
         }
 
 
@@ -316,16 +314,13 @@ class ProviderBenchmark:
     def __init__(self) -> None:
         self.config = get_config()
 
-    def test_all_providers(self) -> List[ProviderInfo]:
+    def test_all_providers(self) -> list[ProviderInfo]:
         """Test all providers for availability and configuration."""
         return test_all_providers()
 
     def benchmark_current_provider(
-        self,
-        observation: str,
-        domain: str = "general",
-        num_runs: int = 5
-    ) -> Dict[str, Any]:
+        self, observation: str, domain: str = "general", num_runs: int = 5
+    ) -> dict[str, Any]:
         """Benchmark the currently configured provider."""
         return benchmark_provider_prompt_generation(
             provider_name=self.config.provider.value,
@@ -333,25 +328,24 @@ class ProviderBenchmark:
             domain=domain,
             num_hypotheses=self.config.default_num_hypotheses,
             use_council=self.config.enable_council,
-            num_runs=num_runs
+            num_runs=num_runs,
         )
 
     def run_comprehensive_benchmark(
-        self,
-        test_observations: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        self, test_observations: list[str] | None = None
+    ) -> dict[str, Any]:
         """Run comprehensive benchmark across all providers and scenarios."""
         if test_observations is None:
             test_observations = [
                 "Stock dropped 5% on good news",
                 "Server latency increased but CPU is flat",
-                "Customer satisfaction improved while support tickets increased"
+                "Customer satisfaction improved while support tickets increased",
             ]
 
-        results: Dict[str, Any] = {
+        results: dict[str, Any] = {
             "timestamp": time.time(),
             "provider_info": {},
-            "benchmark_results": {}
+            "benchmark_results": {},
         }
 
         # Test provider availability
@@ -360,7 +354,7 @@ class ProviderBenchmark:
             results["provider_info"][info.name] = {
                 "available": info.available,
                 "configured": info.configured,
-                "error": info.error_message
+                "error": info.error_message,
             }
 
         # Run benchmarks for available providers
@@ -369,15 +363,11 @@ class ProviderBenchmark:
                 provider_results = []
                 for i, observation in enumerate(test_observations):
                     result = benchmark_provider_prompt_generation(
-                        provider_name=info.name,
-                        observation=observation,
-                        num_runs=3
+                        provider_name=info.name, observation=observation, num_runs=3
                     )
-                    provider_results.append({
-                        "scenario": i + 1,
-                        "observation": observation,
-                        "result": result
-                    })
+                    provider_results.append(
+                        {"scenario": i + 1, "observation": observation, "result": result}
+                    )
 
                 results["benchmark_results"][info.name] = provider_results
 

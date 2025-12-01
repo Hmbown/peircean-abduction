@@ -14,7 +14,9 @@ To use this with an LLM:
 
 import json
 import sys
+
 from peircean.mcp.server import peircean_abduce_single_shot
+
 
 def main() -> None:
     print("🔍 Peircean Abduction: Quickstart Demo")
@@ -29,7 +31,7 @@ def main() -> None:
     print(f"\n[1] Observation: {observation}")
     print(f"    Context: {context}")
     print(f"    Domain: {domain}")
-    
+
     print("\n[2] Generating prompt via Peircean Logic Harness...")
 
     # 2. Call the Tool
@@ -50,8 +52,8 @@ def main() -> None:
     print("\n✅ Success! Generated structured prompt:")
     print("-" * 60)
     # Show a preview of the prompt
-    preview_lines = prompt.split('\n')[:15]
-    print('\n'.join(preview_lines))
+    preview_lines = prompt.split("\n")[:15]
+    print("\n".join(preview_lines))
     print("... [Rest of prompt] ...")
     print("-" * 60)
 
@@ -59,6 +61,7 @@ def main() -> None:
     print("1. Run 'peircean --install' to configure Claude Desktop.")
     print("2. Open Claude and ask: 'Analyze this anomaly: Customer churn doubled...'")
     print("3. The Peircean tools will activate automatically.")
+
 
 if __name__ == "__main__":
     main()

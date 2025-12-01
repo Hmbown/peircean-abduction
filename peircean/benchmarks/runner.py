@@ -10,36 +10,32 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 from rich.console import Console
-from rich.progress import Progress, TaskID, track
 from rich.panel import Panel
+from rich.progress import Progress
 
+from .providers import (
+    benchmark_all_providers,
+    test_all_providers,
+)
 from .scenarios import (
-    get_standard_scenarios,
-    get_scenario_by_name,
-    get_scenarios_by_tag,
-    get_scenarios_by_domain,
-    get_quick_scenarios,
+    BenchmarkScenario,
     get_complex_scenarios,
     get_council_scenarios,
-    BenchmarkScenario,
+    get_quick_scenarios,
+    get_scenario_by_name,
+    get_scenarios_by_domain,
+    get_scenarios_by_tag,
+    get_standard_scenarios,
 )
 from .utils import (
-    run_benchmark_scenario,
     calculate_summary,
-    print_results_table,
-    save_results_json,
-    load_results_json,
     get_system_info,
+    print_results_table,
+    run_benchmark_scenario,
+    save_results_json,
     validate_scenario_expectations,
-    create_progress_report,
-)
-from .providers import (
-    test_all_providers,
-    benchmark_all_providers,
-    ProviderBenchmark,
 )
 
 console = Console()
@@ -122,7 +118,7 @@ Examples:
     return parser
 
 
-def get_scenarios_from_args(args: argparse.Namespace) -> List[BenchmarkScenario]:
+def get_scenarios_from_args(args: argparse.Namespace) -> list[BenchmarkScenario]:
     """Get scenarios based on command line arguments."""
     if args.scenario:
         scenario = get_scenario_by_name(args.scenario)
@@ -201,10 +197,10 @@ def run_provider_tests(args: argparse.Namespace) -> int:
 
 
 def run_prompt_generation_tests(
-    scenarios: List[BenchmarkScenario], args: argparse.Namespace
+    scenarios: list[BenchmarkScenario], args: argparse.Namespace
 ) -> int:
     """Run prompt generation performance tests."""
-    console.print(Panel(f"[bold blue]Prompt Generation Benchmarks[/bold blue]"))
+    console.print(Panel("[bold blue]Prompt Generation Benchmarks[/bold blue]"))
     console.print(f"Running {len(scenarios)} scenarios with {args.runs} runs each")
 
     from ..config import get_config
@@ -236,7 +232,7 @@ def run_prompt_generation_tests(
                 all_results.append(result)
 
                 # Validate against expectations
-                validation = validate_scenario_expectations(
+                validate_scenario_expectations(
                     result, scenario.expected_min_prompt_length, scenario.expected_max_time_seconds
                 )
 
@@ -264,7 +260,7 @@ def run_prompt_generation_tests(
         results_by_scenario[result.scenario_name].append(result)
 
     summaries = []
-    for scenario_name, scenario_results in results_by_scenario.items():
+    for _, scenario_results in results_by_scenario.items():
         summary = calculate_summary(scenario_results)
         summaries.append(summary)
 
@@ -306,7 +302,7 @@ def main() -> int:
         return 1
 
     # Display what will be run
-    console.print(Panel(f"[bold blue]Peircean Abduction Benchmarks[/bold blue]"))
+    console.print(Panel("[bold blue]Peircean Abduction Benchmarks[/bold blue]"))
     console.print(f"Running {len(scenarios)} scenario(s):")
     for scenario in scenarios:
         console.print(f"  • {scenario.name}: {scenario.description}")

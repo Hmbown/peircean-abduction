@@ -14,21 +14,21 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Optional
 
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
 
+from .config import get_config
 from .core import abduction_prompt
-from .config import get_config, reload_config, PeirceanConfig
 from .providers import get_provider_registry
 from .utils.env import validate_environment
 
 # Import wizard components inline to avoid circular import issues
 try:
     from .wizard.config_wizard import run_config_wizard
+
     CONFIG_WIZARD_AVAILABLE = True
 except ImportError:
     CONFIG_WIZARD_AVAILABLE = False
@@ -64,8 +64,10 @@ Configuration:
 
     # Configuration commands (when no observation provided)
     parser.add_argument(
-        "config_action", nargs="?", choices=["show", "validate", "providers", "wizard"],
-        help="Configuration action (use without observation)"
+        "config_action",
+        nargs="?",
+        choices=["show", "validate", "providers", "wizard"],
+        help="Configuration action (use without observation)",
     )
 
     # Management Commands
@@ -114,7 +116,7 @@ Configuration:
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
-    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.2")
+    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.3")
 
     return parser
 
@@ -174,7 +176,7 @@ def run_interactive(
                 "domain": domain,
                 "num_hypotheses": num_hypotheses,
                 "use_council": use_council,
-                "prompt": prompt
+                "prompt": prompt,
             }
             print(json.dumps(output, indent=2))
         else:
@@ -195,13 +197,17 @@ def run_interactive(
     try:
         # Get provider client
         from .providers import get_provider_client
+
         provider_client = get_provider_client(config.provider.value, config.get_provider_config())
 
         if not provider_client or not provider_client.is_available():
             console.print("[red]❌ Provider not available. Falling back to prompt mode.[/red]")
             # Fall back to prompt mode
             prompt = abduction_prompt(
-                observation=observation, context=context, domain=domain, num_hypotheses=num_hypotheses
+                observation=observation,
+                context=context,
+                domain=domain,
+                num_hypotheses=num_hypotheses,
             )
             console.print(Markdown(f"```\n{prompt}\n```"))
             return
@@ -231,14 +237,16 @@ def run_interactive(
                     "use_council": use_council,
                     "provider": config.provider.value,
                     "model": config.model,
-                    "result": completion
+                    "result": completion,
                 }
                 print(json.dumps(output, indent=2))
             else:
                 console.print("[bold]📋 Abductive Analysis Result:[/bold]")
                 console.print(Markdown(completion))
         else:
-            console.print("[red]❌ Failed to generate completion. Falling back to prompt mode.[/red]")
+            console.print(
+                "[red]❌ Failed to generate completion. Falling back to prompt mode.[/red]"
+            )
             console.print(Markdown(f"```\n{prompt}\n```"))
 
     except Exception as e:
@@ -285,7 +293,7 @@ def cmd_config_validate() -> int:
     """Validate configuration."""
     config = get_config()
 
-    console.print("[bold blue]Peircean Abduction CLI v1.2.2[/bold blue]")
+    console.print("[bold blue]Peircean Abduction CLI v1.2.3[/bold blue]")
 
     # Validate general configuration
     issues = config.validate_config()
@@ -300,12 +308,12 @@ def cmd_config_validate() -> int:
     # Validate environment
     env_validation = validate_environment()
     if not env_validation["valid"]:
-        console.print(f"\n[red]❌ Environment validation failed:[/red]")
+        console.print("\n[red]❌ Environment validation failed:[/red]")
         for issue in env_validation["issues"]:
             console.print(f"  • {issue}")
 
     if env_validation["warnings"]:
-        console.print(f"\n[yellow]⚠️  Warnings:[/yellow]")
+        console.print("\n[yellow]⚠️  Warnings:[/yellow]")
         for warning in env_validation["warnings"]:
             console.print(f"  • {warning}")
 
@@ -334,13 +342,14 @@ def cmd_config_providers() -> int:
             # Check if provider is available
             provider_config = get_config().get_provider_config()
             provider_instance = registry.create_provider(provider_name, provider_config)
-            available = "✅ Available" if provider_instance and provider_instance.is_available() else "⚠️ Config needed"
+            available = (
+                "✅ Available"
+                if provider_instance and provider_instance.is_available()
+                else "⚠️ Config needed"
+            )
 
             table.add_row(
-                provider_name,
-                provider_info.display_name,
-                provider_info.description,
-                available
+                provider_name, provider_info.display_name, provider_info.description, available
             )
 
     console.print(table)
@@ -395,6 +404,7 @@ def main() -> int:
     # Handle Management Commands
     if args.verify:
         from .validate import main as validate_main
+
         return validate_main()
 
     if args.install:

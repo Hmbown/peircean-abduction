@@ -12,13 +12,13 @@ Usage:
     peircean-bench --export-json results.json
 """
 
+from .providers import ProviderBenchmark
 from .runner import main as run_benchmarks
 from .scenarios import (
     BenchmarkScenario,
-    get_standard_scenarios,
     get_scenario_by_name,
+    get_standard_scenarios,
 )
-from .providers import ProviderBenchmark
 
 __all__ = [
     "run_benchmarks",

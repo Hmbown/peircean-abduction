@@ -6,9 +6,8 @@ Standard scenarios covering different domains, complexity levels, and usage patt
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -19,19 +18,19 @@ class BenchmarkScenario:
     description: str
     domain: str
     observation: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
     num_hypotheses: int = 5
     use_council: bool = True
     expected_min_prompt_length: int = 1000
     expected_max_time_seconds: float = 5.0
-    tags: Optional[List[str]] = None
+    tags: list[str] | None = None
 
     def __post_init__(self) -> None:
         if self.tags is None:
             self.tags = []
 
 
-def get_standard_scenarios() -> List[BenchmarkScenario]:
+def get_standard_scenarios() -> list[BenchmarkScenario]:
     """Get standard benchmark scenarios covering various use cases."""
 
     scenarios = [
@@ -43,9 +42,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             observation="Stock price dropped 5% on positive earnings news",
             expected_min_prompt_length=800,
             expected_max_time_seconds=2.0,
-            tags=["simple", "financial", "quick"]
+            tags=["simple", "financial", "quick"],
         ),
-
         BenchmarkScenario(
             name="simple_technical",
             description="Simple technical system anomaly",
@@ -53,9 +51,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             observation="Server latency increased 10x but CPU usage is normal",
             expected_min_prompt_length=800,
             expected_max_time_seconds=2.0,
-            tags=["simple", "technical", "quick"]
+            tags=["simple", "technical", "quick"],
         ),
-
         # Medium complexity scenarios
         BenchmarkScenario(
             name="medium_business",
@@ -65,9 +62,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={"industry": "SaaS", "time_period": "Q3 2024"},
             expected_min_prompt_length=1200,
             expected_max_time_seconds=3.0,
-            tags=["medium", "business", "context"]
+            tags=["medium", "business", "context"],
         ),
-
         BenchmarkScenario(
             name="medium_medical",
             description="Medium complexity medical diagnostic scenario",
@@ -76,9 +72,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={"patient_age": 45, "symptoms_duration": "3 days"},
             expected_min_prompt_length=1200,
             expected_max_time_seconds=3.0,
-            tags=["medium", "medical", "context"]
+            tags=["medium", "medical", "context"],
         ),
-
         # Complex scenarios
         BenchmarkScenario(
             name="complex_scientific",
@@ -88,13 +83,12 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={
                 "field": "quantum_physics",
                 "experiment_type": "double_slit",
-                "reproducibility": "high"
+                "reproducibility": "high",
             },
             expected_min_prompt_length=1500,
             expected_max_time_seconds=4.0,
-            tags=["complex", "scientific", "research"]
+            tags=["complex", "scientific", "research"],
         ),
-
         BenchmarkScenario(
             name="complex_legal",
             description="Complex legal interpretation scenario",
@@ -103,13 +97,12 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={
                 "jurisdiction": "federal",
                 "case_type": "constitutional_law",
-                "precedent_level": "supreme_court"
+                "precedent_level": "supreme_court",
             },
             expected_min_prompt_length=1500,
             expected_max_time_seconds=4.0,
-            tags=["complex", "legal", "precedent"]
+            tags=["complex", "legal", "precedent"],
         ),
-
         # Council evaluation scenarios
         BenchmarkScenario(
             name="council_financial",
@@ -120,9 +113,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             num_hypotheses=5,
             expected_min_prompt_length=2000,
             expected_max_time_seconds=6.0,
-            tags=["council", "financial", "evaluation"]
+            tags=["council", "financial", "evaluation"],
         ),
-
         BenchmarkScenario(
             name="council_technical",
             description="Technical scenario with Council of Critics evaluation",
@@ -132,9 +124,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={"optimization_type": "caching", "system_type": "database"},
             expected_min_prompt_length=2000,
             expected_max_time_seconds=6.0,
-            tags=["council", "technical", "evaluation"]
+            tags=["council", "technical", "evaluation"],
         ),
-
         # Edge cases
         BenchmarkScenario(
             name="minimal",
@@ -145,9 +136,8 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             use_council=False,
             expected_min_prompt_length=500,
             expected_max_time_seconds=1.0,
-            tags=["minimal", "baseline", "quick"]
+            tags=["minimal", "baseline", "quick"],
         ),
-
         BenchmarkScenario(
             name="maximal",
             description="Maximal scenario for stress testing",
@@ -156,20 +146,20 @@ def get_standard_scenarios() -> List[BenchmarkScenario]:
             context={
                 "methodologies": ["experimental", "observational", "computational"],
                 "disciplines": ["physics", "chemistry", "biology"],
-                "sample_size": 10000
+                "sample_size": 10000,
             },
             num_hypotheses=8,
             use_council=True,
             expected_min_prompt_length=3000,
             expected_max_time_seconds=10.0,
-            tags=["maximal", "stress", "council"]
+            tags=["maximal", "stress", "council"],
         ),
     ]
 
     return scenarios
 
 
-def get_scenario_by_name(name: str) -> Optional[BenchmarkScenario]:
+def get_scenario_by_name(name: str) -> BenchmarkScenario | None:
     """Get a specific scenario by name."""
     scenarios = get_standard_scenarios()
     for scenario in scenarios:
@@ -178,31 +168,31 @@ def get_scenario_by_name(name: str) -> Optional[BenchmarkScenario]:
     return None
 
 
-def get_scenarios_by_tag(tag: str) -> List[BenchmarkScenario]:
+def get_scenarios_by_tag(tag: str) -> list[BenchmarkScenario]:
     """Get all scenarios with a specific tag."""
     scenarios = get_standard_scenarios()
     return [s for s in scenarios if s.tags and tag in s.tags]
 
 
-def get_scenarios_by_domain(domain: str) -> List[BenchmarkScenario]:
+def get_scenarios_by_domain(domain: str) -> list[BenchmarkScenario]:
     """Get all scenarios for a specific domain."""
     scenarios = get_standard_scenarios()
     return [s for s in scenarios if s.domain == domain]
 
 
-def get_quick_scenarios() -> List[BenchmarkScenario]:
+def get_quick_scenarios() -> list[BenchmarkScenario]:
     """Get quick scenarios for rapid testing."""
     scenarios = get_standard_scenarios()
     return [s for s in scenarios if s.tags and "quick" in s.tags]
 
 
-def get_complex_scenarios() -> List[BenchmarkScenario]:
+def get_complex_scenarios() -> list[BenchmarkScenario]:
     """Get complex scenarios for thorough testing."""
     scenarios = get_standard_scenarios()
     return [s for s in scenarios if s.tags and ("complex" in s.tags or "maximal" in s.tags)]
 
 
-def get_council_scenarios() -> List[BenchmarkScenario]:
+def get_council_scenarios() -> list[BenchmarkScenario]:
     """Get scenarios that use Council of Critics."""
     scenarios = get_standard_scenarios()
     return [s for s in scenarios if s.use_council]

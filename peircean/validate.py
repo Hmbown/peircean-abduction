@@ -17,7 +17,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
-from typing import Any, Dict, List
+from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -25,9 +25,10 @@ from rich.status import Status
 from rich.table import Table
 
 try:
-    from .config import get_config, reload_config
+    from .config import get_config
     from .providers import get_provider_registry
     from .utils.env import validate_environment
+
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
@@ -137,7 +138,7 @@ def check_claude_config() -> None:
         pass
 
 
-def check_enhanced_dependencies() -> Dict[str, bool]:
+def check_enhanced_dependencies() -> dict[str, bool]:
     """Check core and optional dependencies with detailed status."""
     results = {}
 
@@ -178,7 +179,7 @@ def check_enhanced_dependencies() -> Dict[str, bool]:
     return results
 
 
-def check_provider_configuration() -> Dict[str, Any]:
+def check_provider_configuration() -> dict[str, Any]:
     """Check provider configuration and availability."""
     if not CONFIG_AVAILABLE:
         console.print("\n[yellow]⚠️  Configuration system not available[/yellow]")
@@ -211,7 +212,9 @@ def check_provider_configuration() -> Dict[str, Any]:
             console.print("  [green]✅ Provider client available[/green]")
             available = True
         else:
-            console.print("  [yellow]⚠️  Provider client not available (API key or connectivity issue)[/yellow]")
+            console.print(
+                "  [yellow]⚠️  Provider client not available (API key or connectivity issue)[/yellow]"
+            )
             available = False
 
         # Check all providers
@@ -225,8 +228,14 @@ def check_provider_configuration() -> Dict[str, Any]:
             provider_info = registry.get_provider_info(provider_name)
             if provider_info:
                 # Check if API key is available
-                has_key = bool(provider_info.env_api_key and
-                              (importlib.util.find_spec(provider_info.dependency_name) if provider_info.dependency_name else True))
+                has_key = bool(
+                    provider_info.env_api_key
+                    and (
+                        importlib.util.find_spec(provider_info.dependency_name)
+                        if provider_info.dependency_name
+                        else True
+                    )
+                )
 
                 status = "✅ Available" if has_key else "⚠️ Config needed"
                 key_status = "✅ Set" if has_key else "❌ Missing"
@@ -247,7 +256,7 @@ def check_provider_configuration() -> Dict[str, Any]:
         return {"available": False, "error": str(e)}
 
 
-def check_environment_setup() -> Dict[str, Any]:
+def check_environment_setup() -> dict[str, Any]:
     """Check environment configuration and .env file."""
     if not CONFIG_AVAILABLE:
         console.print("\n[yellow]⚠️  Environment validation not available[/yellow]")
@@ -259,7 +268,9 @@ def check_environment_setup() -> Dict[str, Any]:
         env_validation = validate_environment()
 
         if env_validation["loaded_env_file"]:
-            console.print(f"  [green]✅ .env file loaded: {env_validation['loaded_env_file']}[/green]")
+            console.print(
+                f"  [green]✅ .env file loaded: {env_validation['loaded_env_file']}[/green]"
+            )
         else:
             console.print("  [yellow]⚠️  No .env file found[/yellow]")
 
@@ -287,15 +298,16 @@ def check_environment_setup() -> Dict[str, Any]:
         return {"available": False, "error": str(e)}
 
 
-def check_ide_integrations() -> Dict[str, bool]:
+def check_ide_integrations() -> dict[str, bool]:
     """Check IDE integration status."""
     console.print("\n[bold]IDE Integration Status:[/bold]")
 
-    results: Dict[str, Any] = {}
+    results: dict[str, Any] = {}
 
     # Claude Desktop
     try:
         from peircean.mcp.setup import get_default_config_path
+
         config_path = get_default_config_path()
 
         if config_path.exists():
@@ -337,7 +349,7 @@ def main() -> int:
     console.print(Panel("[bold blue]🔍 Peircean Abduction Enhanced System Check[/bold blue]"))
 
     all_passed = True
-    results: Dict[str, Any] = {}
+    results: dict[str, Any] = {}
 
     with Status("Performing comprehensive system check...", spinner="dots"):
         # Basic checks
@@ -370,15 +382,19 @@ def main() -> int:
         check_claude_config()
 
     # Summary
-    console.print("\n" + "="*50)
+    console.print("\n" + "=" * 50)
     console.print("[bold]📊 System Check Summary[/bold]")
-    console.print("="*50)
+    console.print("=" * 50)
 
     # Core requirements status
     core_ok = (
-        results.get("python", False) and
-        results.get("mcp_server", False) and
-        all(results.get(k, True) for k in ["pydantic", "httpx", "tenacity", "rich"] if k in results.get("dependencies", {}))
+        results.get("python", False)
+        and results.get("mcp_server", False)
+        and all(
+            results.get(k, True)
+            for k in ["pydantic", "httpx", "tenacity", "rich"]
+            if k in results.get("dependencies", {})
+        )
     )
 
     if core_ok:
@@ -407,7 +423,7 @@ def main() -> int:
         console.print("[yellow]⚠️  No IDEs configured (run 'peircean --install')[/yellow]")
 
     # Final verdict
-    console.print("\n" + "="*50)
+    console.print("\n" + "=" * 50)
     if all_passed and core_ok:
         console.print("[bold green]🎉 System ready for Abduction! 🎉[/bold green]")
         console.print("\n[dim]Next steps:[/dim]")

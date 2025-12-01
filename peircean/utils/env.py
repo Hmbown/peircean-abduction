@@ -10,16 +10,17 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
     from dotenv import load_dotenv
+
     DOTENV_AVAILABLE = True
 except ImportError:
     DOTENV_AVAILABLE = False
 
 
-def find_env_file(start_path: Optional[Path] = None) -> Optional[Path]:
+def find_env_file(start_path: Path | None = None) -> Path | None:
     """
     Find .env file by searching up from the given path.
 
@@ -55,7 +56,7 @@ def find_env_file(start_path: Optional[Path] = None) -> Optional[Path]:
     return None
 
 
-def load_env_file(env_file_path: Optional[Path] = None) -> bool:
+def load_env_file(env_file_path: Path | None = None) -> bool:
     """
     Load environment variables from .env file.
 
@@ -85,10 +86,7 @@ def load_env_file(env_file_path: Optional[Path] = None) -> bool:
 
 
 def get_env_var(
-    key: str,
-    default: Optional[Any] = None,
-    cast_type: Optional[type] = None,
-    required: bool = False
+    key: str, default: Any | None = None, cast_type: type | None = None, required: bool = False
 ) -> Any:
     """
     Get environment variable with optional type casting and validation.
@@ -114,7 +112,7 @@ def get_env_var(
 
     if cast_type is not None:
         try:
-            if cast_type == bool:
+            if cast_type is bool:
                 # Handle boolean conversion
                 if value.lower() in ("true", "1", "yes", "on"):
                     return True
@@ -122,15 +120,17 @@ def get_env_var(
                     return False
                 else:
                     return bool(value)
-            elif cast_type == int:
+            elif cast_type is int:
                 return int(value)
-            elif cast_type == float:
+            elif cast_type is float:
                 return float(value)
             else:
                 return cast_type(value)
         except (ValueError, TypeError) as e:
             if required:
-                raise ValueError(f"Environment variable '{key}' must be convertible to {cast_type.__name__}: {e}")
+                raise ValueError(
+                    f"Environment variable '{key}' must be convertible to {cast_type.__name__}: {e}"
+                ) from e
             return default
 
     return value
@@ -231,10 +231,6 @@ def validate_environment() -> dict[str, Any]:
         results["issues"].append("No API keys found in environment variables")
         results["valid"] = False
 
-    # Check Python version
-    if sys.version_info < (3, 10):
-        results["issues"].append(f"Python 3.10+ required (found {sys.version_info.major}.{sys.version_info.minor})")
-        results["valid"] = False
 
     return results
 
@@ -286,7 +282,7 @@ PEIRCEAN_DEFAULT_NUM_HYPOTHESES=5
     return content
 
 
-def detect_provider_from_env() -> Optional[str]:
+def detect_provider_from_env() -> str | None:
     """
     Automatically detect provider from available API keys.
 
