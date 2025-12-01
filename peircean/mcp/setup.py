@@ -38,8 +38,18 @@ def get_default_config_path() -> Path:
 
 def get_mcp_config() -> dict[str, Any]:
     """Get the MCP configuration for Peircean Logic Harness."""
+    # CRITICAL: Use the absolute path to the current Python interpreter
+    # This ensures that when Claude runs the server, it uses the same environment
+    # where peircean-abduction is installed (e.g., virtualenv, uv, conda).
+    python_path = sys.executable
+
     return {
-        "mcpServers": {"peircean": {"command": "python", "args": ["-m", "peircean.mcp.server"]}}
+        "mcpServers": {
+            "peircean": {
+                "command": python_path,
+                "args": ["-m", "peircean.mcp.server"],
+            }
+        }
     }
 
 

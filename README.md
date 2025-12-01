@@ -43,62 +43,37 @@ Most LLMs act like a **Jury**: they weigh the evidence they have and give you a 
 pip install peircean-abduction
 ```
 
-### 2. Run an Example
-We provide runnable Python scripts to demonstrate the logic harness.
-
-**Simple Demo (Single-Shot):**
+### 2. Verify Environment
+Ensure everything is set up correctly (Python version, dependencies, path):
 ```bash
-# Clone the repo first if you haven't
-git clone https://github.com/Hmbown/peircean-abduction.git
-cd peircean-abduction
+peircean --verify
+```
 
-# Run the quickstart
+### 3. Run the Demo
+See the logic harness in action (generates an abductive prompt):
+```bash
 python examples/quickstart.py
-```
-
-### 3. Verify Installation
-Ensure the MCP server is correctly configured by running the validation script:
-```bash
-python scripts/validate_mcp.py
-```
-
-**Full Scenario (International Law):**
-```bash
-python examples/international_law.py
 ```
 
 ---
 
-## 🔌 MCP Server Setup
+## 🔌 MCP Server Setup (Claude Desktop / Cursor)
 
-Connect Peircean Abduction to your AI assistant (Claude, Cursor, etc.) to give it abductive reasoning superpowers.
+Give your AI assistant abductive reasoning superpowers.
 
-### Claude Desktop
-
-**Automatic (recommended):**
+### 1. Install Config
+Automatically configure Claude Desktop to use the Peircean MCP server:
 ```bash
-# macOS
-peircean-setup-mcp --write "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-
-# Windows
-peircean-setup-mcp --write "%APPDATA%\Claude\claude_desktop_config.json"
+peircean --install
 ```
+*This adds the server to your `claude_desktop_config.json`.*
 
-**Manual Configuration:**
-```json
-{
-  "mcpServers": {
-    "peircean": {
-      "command": "python",
-      "args": ["-m", "peircean.mcp.server"]
-    }
-  }
-}
-```
+### 2. Restart Claude
+Restart Claude Desktop. You should see a 🔌 icon indicating the tool is active.
 
-### Cursor / VS Code
-1.  Run `peircean-setup-mcp` to generate the config JSON.
-2.  Paste it into your editor's MCP settings.
+### 3. Try it out
+Ask Claude:
+> "Analyze this anomaly: My server latency spiked 10x but CPU usage is flat."
 
 ---
 
@@ -129,6 +104,22 @@ The harness enforces a strict 3-step logical flow:
     1.  **H1 (Attack)**: "Sleeper weapon activated." -> **Prediction**: Check for uplink signals at T-10s.
     2.  **H2 (Glitch)**: "Deorbit script misfire." -> **Prediction**: Check code for specific trigger conditions.
     *   **Verdict**: Investigate H1 first because it explains the *vector* (steering into target), whereas H2 only explains the *burn*.
+
+---
+
+## 🛠️ Troubleshooting
+
+**"Module not found: peircean" in Claude**
+*   This usually happens if `peircean` was installed in a virtual environment (venv/conda) but Claude is using the system Python.
+*   **Fix**: Run `peircean --install` *from within your active environment*. It will automatically register the absolute path to the correct Python executable.
+
+**"No LLM backend configured"**
+*   The CLI tool (`peircean "observation"`) currently outputs prompts for you to paste into an LLM.
+*   For fully automated abduction, use the MCP integration with Claude Desktop.
+
+**Verify Command Failed**
+*   Run `peircean --verify` to see detailed diagnostics.
+*   Ensure you are on Python 3.10+.
 
 ---
 

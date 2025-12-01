@@ -41,6 +41,18 @@ Examples:
         "observation", nargs="?", help="The surprising fact or anomalous observation to explain"
     )
 
+    # Management Commands
+    parser.add_argument(
+        "--install", action="store_true", help="Install MCP server to Claude Desktop config"
+    )
+    parser.add_argument(
+        "--verify", action="store_true", help="Verify installation and environment"
+    )
+
+    parser.add_argument(
+        "--json", action="store_true", help="Output JSON (for install or interactive mode)"
+    )
+
     parser.add_argument(
         "-d",
         "--domain",
@@ -105,13 +117,15 @@ def run_interactive(
     # For now, just output the prompt since we don't have a default LLM
     console.print(
         Panel(
-            "[yellow]No LLM backend configured.[/yellow]\n\n"
-            "Peircean Abduction works in two modes:\n\n"
-            "1. [bold]Prompt Mode[/bold]: Generate prompts for your own LLM\n"
-            '   Use: peircean --prompt "observation"\n\n'
-            "2. [bold]MCP Server[/bold]: Integrate with Claude Desktop\n"
-            "   Use: peircean-setup-mcp --write\n\n"
-            "Outputting prompt for your observation:",
+            "[yellow]No LLM backend configured locally.[/yellow]\n\n"
+            "To use Peircean Abduction:\n\n"
+            "1. [bold]Via Claude Desktop / Cursor (Recommended)[/bold]\n"
+            "   Run: [green]peircean --install[/green]\n"
+            "   Then restart Claude and use the tools directly in chat.\n\n"
+            "2. [bold]Via CLI Prompt[/bold]\n"
+            '   Use: [blue]peircean --prompt "your observation"[/blue]\n'
+            "   (Copy the output into any LLM)\n\n"
+            "Outputting prompt for your observation below:",
             title="Peircean Abduction",
         )
     )
@@ -131,6 +145,23 @@ def main() -> int:
     """Main CLI entry point."""
     parser = create_parser()
     args = parser.parse_args()
+
+    # Handle Management Commands
+    if args.verify:
+        from .validate import main as validate_main
+        return validate_main()
+
+    if args.install:
+        from .mcp.setup import main as setup_main
+        
+        if args.json:
+             # Just output JSON, don't write
+            setup_main(["--json"])
+        else:
+            # Invoke setup with --write default
+            console.print("[bold]Installing MCP Server config...[/bold]")
+            setup_main(["--write"])
+        return 0
 
     # Check for observation
     if not args.observation:
