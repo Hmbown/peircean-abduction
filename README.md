@@ -1,12 +1,12 @@
-# 🕵️ Peircean Abduction
+# Peircean Abduction
 ### A Logic Harness for Abductive Inference
 
-> *"Abduction is the process of forming an explanatory hypothesis. It is the only logical operation which introduces any new idea."*  
+> "Abduction is the process of forming an explanatory hypothesis. It is the only logical operation which introduces any new idea."
 > — Charles Sanders Peirce
 
-**Peircean Abduction** turns your LLM into a rigorous detective. It forces models to stop guessing and start reasoning.
+**Peircean Abduction** is a Model Context Protocol (MCP) server that implements a rigorous framework for abductive reasoning in Large Language Models.
 
-Most LLMs are great at *deduction* (applying rules) and *induction* (finding patterns), but terrible at **abduction**—the art of explaining *why* something weird just happened. This MCP server fixes that by enforcing a strict, 3-phase logic loop: **Observe → Hypothesize → Evaluate**.
+While standard LLM inference relies heavily on pattern matching (induction) and rule application (deduction), this system enforces a structured logic loop designed specifically for **abduction**: the inference to the best explanation for anomalous observations. The architecture compels the model to adhere to a strict three-phase process: **Observation → Hypothesize → Evaluate**.
 
 [![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)](https://github.com/Hmbown/peircean-abduction/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Hmbown/peircean-abduction/blob/main/LICENSE)
@@ -16,66 +16,64 @@ Most LLMs are great at *deduction* (applying rules) and *induction* (finding pat
 
 ---
 
-## 🛰️ The Case of the "Defunct" Satellite
+## Case Study: Orbital Anomaly Analysis
 
-Imagine you are an intelligence analyst. You receive a disturbing report:
+**Input Data**
+> **Observation:** A satellite designated as "defunct" and classified as space debris by Country A executed a controlled burn 10 seconds prior to a collision trajectory with a space station.
+> **Context:** Country A claims accidental collision. Recovered flight logs indicate intentional thruster activation.
 
-> **Observation:** A "defunct" satellite, claimed by Country A to be space debris, executed a controlled burn 10 seconds before colliding with a space station.  
-> **Context:** Country A insists it was an accident. Flight logs recovered later show the thrusters fired intentionally.
+**System Output**
 
-You feed this into **Peircean Abduction**. It doesn't just summarize the text. It investigates.
+### Phase 1: Observation
+**Anomaly Detection:** "Debris follows Keplerian orbits; controlled propulsion contradicts debris classification."
+**Surprise Score:** 0.99 (Critical Anomaly)
 
-### Phase 1: The Observation
-The system flags the anomaly: *"Debris follows Keplerian orbits. It does not steer."*  
-**Surprise Score:** 0.99 (Extremely Anomalous)
+### Phase 2: Hypothesis Generation
+The system generates probabilistic explanations based on available evidence:
 
-### Phase 2: The Hypotheses
-The model generates **competing explanations**, not just one answer:
+*   **H1 (Kinetic Weaponry):** The satellite was a dormant Kinetic Anti-Satellite (ASAT) weapon, activated for a targeted strike.
+*   **H2 (Automated Failure):** An "end-of-life" deorbit script triggered erroneously, resulting in a coincidental collision course.
+*   **H3 (Signal Intrusion):** A third-party actor compromised the command link to engineer a false flag event.
 
-*   **Hypothesis 1 (The Sleeper):** The satellite was a dormant Kinetic Anti-Satellite (ASAT) weapon, activated for a covert strike.
-*   **Hypothesis 2 (The Glitch):** An automated "end-of-life" deorbit script triggered erroneously, coincidentally steering it into the target.
-*   **Hypothesis 3 (The Frame-Job):** A third-party actor hacked the satellite's command link to frame Country A for an act of war.
+### Phase 3: Inference to Best Explanation (IBE)
+A dialectical evaluation via the **Council of Critics** (Logician, Empiricist, Scientist) assesses the hypotheses.
 
-### Phase 3: The Verdict (Inference to Best Explanation)
-The **Council of Critics** (a simulated debate between a Logician, Empiricist, and Scientist) weighs the evidence.
-
-> **Verdict:** **Hypothesis 1 (The Sleeper)** is the best explanation.  
-> **Reasoning:** The precision of the burn (steering *into* the target) makes H2 statistically impossible. H3 is plausible but lacks evidence of signal intrusion. H1 explains all facts with the fewest assumptions.
+> **Verdict:** **H1 (Kinetic Weaponry)**
+> **Reasoning:** The precise timing and vector of the burn render H2 statistically negligible. H3 requires unproven assumptions regarding signal compromise. H1 offers the most parsimonious explanation consistent with all observed data points (burn timing, trajectory, flight logs).
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# 1. Install
+# Install
 pip install peircean-abduction
 
-# 2. Connect (Claude Desktop / Cursor)
+# Initialize (Claude Desktop / Cursor)
 peircean --install
-
-# 3. Solve a mystery in Claude:
-# "Use peircean to analyze: [your observation]"
 ```
 
 ---
 
-## 🛠️ How It Works: The 3-Phase Loop
+## Methodology
 
-### Phase 1: **Observe** → Register the Surprising Fact
+The system operates on a strict three-phase logical loop.
+
+### Phase 1: Observation
+Registers the anomalous fact and quantifies the deviation from expected baselines.
 
 ```python
 from peircean.mcp.server import peircean_observe_anomaly
 
 result = peircean_observe_anomaly(
-    observation="API latency spiked 10x but CPU and memory are normal",
-    context="No recent deployments, traffic is steady",
+    observation="API latency spiked 10x; CPU/Memory utilization nominal.",
+    context="No active deployments; steady state traffic.",
     domain="technical"
 )
 ```
 
-**Captures:** What violated expectations and why it's surprising.
-
-### Phase 2: **Hypothesize** → Generate Explanations
+### Phase 2: Hypothesis Generation
+Generates competing explanations with associated prior probabilities and falsifiable predictions.
 
 ```python
 from peircean.mcp.server import peircean_generate_hypotheses
@@ -86,9 +84,8 @@ result = peircean_generate_hypotheses(
 )
 ```
 
-**Generates:** Competing hypotheses with prior probabilities and testable predictions.
-
-### Phase 3: **Evaluate** → Select Best Explanation
+### Phase 3: Evaluation
+Selects the best explanation using multi-perspective critique.
 
 ```python
 from peircean.mcp.server import peircean_evaluate_via_ibe
@@ -96,117 +93,100 @@ from peircean.mcp.server import peircean_evaluate_via_ibe
 result = peircean_evaluate_via_ibe(
     anomaly_json='{"anomaly": {...}}',
     hypotheses_json='{"hypotheses": [...]}',
-    use_council=True  # Enable Council of Critics
+    use_council=True
 )
 ```
 
-**Evaluates:** Scores hypotheses across 5 perspectives (Empiricist, Logician, Pragmatist, Economist, Skeptic) and provides clear next steps.
-
-### Single-Shot Mode (Quick Analysis)
+### Single-Shot Execution
+Executes the full abductive loop in a single call.
 
 ```python
 from peircean.mcp.server import peircean_abduce_single_shot
 
 result = peircean_abduce_single_shot(
-    observation="Customer churn rate doubled in Q3",
-    context="No price changes, NPS stable, no competitor launches",
+    observation="Q3 Churn rate doubled.",
+    context="Pricing invariant; NPS stable; market competition constant.",
     domain="financial",
     num_hypotheses=3
 )
 ```
 
-Runs all 3 phases automatically in one call.
+---
+
+## Applications
+
+### Technical Systems
+**Anomaly:** Server CPU 100% utilization; 0 active user sessions.
+*   **H1:** Cryptojacking malware [P: 0.15]
+*   **H2:** Zombie background process [P: 0.60]
+*   **H3:** Denial of Service attack [P: 0.10]
+**Verdict:** H2. Action: Audit process tree.
+
+### Financial Markets
+**Anomaly:** Equity value -5% following positive earnings report.
+*   **H1:** Market priced in higher expectations.
+*   **H2:** Negative forward guidance.
+*   **H3:** Algorithmic liquidation.
+**Verdict:** H2. Action: Analyze earnings call transcript.
+
+### Security Operations
+**Anomaly:** 500 Error rate spike at 03:00 UTC; no deployment activity.
+*   **H1:** Database connection pool exhaustion.
+*   **H2:** Upstream API rate limiting.
+*   **H3:** SSL Certificate expiration.
+**Verdict:** H1. Action: Review connection pool metrics.
 
 ---
 
-## 📊 Real-World Examples
+## Tool Reference
 
-### 1. Technical Debugging
-**Anomaly:** *"Server CPU at 100% but no users logged in"*
+| Tool | Phase | Function | Output |
+|------|-------|----------|--------|
+| `peircean_observe_anomaly` | 1 | Anomaly Registration | Anomaly JSON |
+| `peircean_generate_hypotheses` | 2 | Explanation Generation | Hypotheses JSON |
+| `peircean_evaluate_via_ibe` | 3 | Explanation Selection | Evaluation JSON |
+| `peircean_abduce_single_shot` | All | Full Cycle Analysis | Analysis Object |
+| `peircean_critic_evaluate` | Aux | Domain Review | Critic JSON |
 
-```
-H1: Cryptojacking malware          [Probability: 0.15]
-H2: Runaway background process      [Probability: 0.60]
-H3: Resource exhaustion attack      [Probability: 0.10]
-
-Verdict: H1 - Check process tree and network connections
-```
-
-### 2. Financial Analysis
-**Anomaly:** *"Stock dropped 5% on good earnings news"*
-
-```
-H1: Market expected even better results
-H2: Forward guidance disappointed
-H3: Algorithmic stop-loss cascade
-
-Verdict: H2 - Check management's Q&A transcript
-```
-
-### 3. Security Incident
-**Anomaly:** *"API returning 500 errors at 3 AM, no deployments"*
-
-```
-H1: Database connection pool exhausted
-H2: Third-party rate limiting
-H3: Certificate expiration
-
-Verdict: H1 - Check pool metrics and error logs
-```
+**Supported Domains:** `technical`, `financial`, `legal`, `medical`, `scientific`, `general`
 
 ---
 
-## 🎯 Available Tools
+## Features
 
-| Tool | Phase | Purpose | Output |
-|------|-------|---------|--------|
-| `peircean_observe_anomaly` | 1 | Register surprising facts | Anomaly JSON |
-| `peircean_generate_hypotheses` | 2 | Generate explanations | Hypotheses JSON |
-| `peircean_evaluate_via_ibe` | 3 | Select best explanation | Evaluation JSON |
-| `peircean_abduce_single_shot` | All | Complete 3-phase analysis | Full analysis |
-| `peircean_critic_evaluate` | Aux | Domain-specific review | Critic evaluation |
-
-**Domain-Specific Guidance:** `technical`, `financial`, `legal`, `medical`, `scientific`, `general`
+*   **MCP Architecture:** Native integration with Model Context Protocol.
+*   **Dialectical Evaluation:** Hypothesis critique via simulated expert perspectives (Council of Critics).
+*   **Provider Agnostic:** Compatible with Anthropic, OpenAI, Gemini, and Ollama runtimes.
+*   **Falsifiability:** Enforced generation of testable predictions for all hypotheses.
 
 ---
 
-## ✨ Features
+## Supported Runtimes
 
-*   **🧠 MCP-First Architecture:** Designed for Claude Desktop, Cursor, and agentic IDEs
-*   **⚖️ Council of Critics:** Every hypothesis evaluated by 5 expert perspectives
-*   **🔌 Provider Agnostic:** Works with Anthropic, OpenAI, Gemini, Ollama
-*   **🔓 No API Key Required:** Generates prompts for you by default
-*   **🎯 Testable Predictions:** Every hypothesis includes falsifiable tests
-
----
-
-## 📦 Supported Models
-
-* **Anthropic** (Claude)
-* **OpenAI** (GPT)
-* **Google DeepMind** (Gemini)
-* **Ollama** (Local models)
+*   **Anthropic** (Claude)
+*   **OpenAI** (GPT)
+*   **Google DeepMind** (Gemini)
+*   **Ollama** (Local Inference)
 
 ---
 
-## 🧪 Performance & Reliability
+## Reliability
 
-- ✅ **156/156** tests passing
-- ✅ **100%** MCP protocol compliance
-- ✅ **5** specialized domains
-- ✅ **Zero** runtime dependencies beyond MCP spec
+*   **Test Coverage:** 156/156 passing.
+*   **Compliance:** MCP v1.0.0.
+*   **Dependencies:** Minimal runtime footprint.
 
 ```bash
-# Run tests
+# Execute Test Suite
 make test
 
-# Verify MCP compliance
+# Verify Compliance
 make verify
 ```
 
 ---
 
-## 📚 Examples & Documentation
+## Documentation
 
 - **Quick Start:** [examples/quickstart.py](examples/quickstart.py)
 - **Full Walkthrough:** [examples/international_law.py](examples/international_law.py)
@@ -215,31 +195,27 @@ make verify
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We value rigor, logic, and testability. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and standards.
+Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for development standards.
 
 ```bash
-# Quick start
 git clone https://github.com/Hmbown/peircean-abduction.git
 cd peircean-abduction
-make dev      # Install dependencies
-make check    # Run all checks
+make dev
+make check
 ```
 
 ---
 
-## 📄 License
+## License
 
-MIT License. Use it to solve crimes, debug code, or understand the universe.
+MIT License.
 
 ---
 
 <div align="center">
 
-**Version**: 1.2.3  
-**Status**: 🟢 Production Ready  
-**MCP Compliant**: ✅ v1.0.0  
-**Last Updated**: December 2025
+**Version**: 1.2.3 | **Status**: Production Ready | **MCP Compliant**: v1.0.0
 
 </div>
