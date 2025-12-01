@@ -61,10 +61,12 @@ PEIRCEAN_INTERACTIVE_MODE=false # Set to true to let the tool call the LLM direc
 
 ## 📦 Supported Models
 
-*   **Anthropic:** Claude 3.5 Sonnet (Recommended), Claude 3.5 Haiku, Claude 3 Opus
-*   **OpenAI:** GPT-4o, GPT-4o Mini, o1-preview
-*   **Gemini:** Gemini 1.5 Pro, Gemini 1.5 Flash
-*   **Ollama:** Llama 3.2, Llama 3.1, Mistral, Qwen 2.5
+Peircean Abduction is designed to be provider-agnostic and supports the latest models from:
+
+*   **Anthropic** (Claude)
+*   **OpenAI** (GPT)
+*   **Google DeepMind** (Gemini)
+*   **Ollama** (Local models)
 
 ## 💡 Example Usage
 
