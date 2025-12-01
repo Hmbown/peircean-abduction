@@ -61,13 +61,15 @@ def check_mcp_server() -> bool:
         required_tools = [
             "peircean_observe_anomaly",
             "peircean_generate_hypotheses",
-            "peircean_evaluate_via_ibe"
+            "peircean_evaluate_via_ibe",
         ]
 
         missing = [t for t in required_tools if t not in tools]
 
         if not missing:
-            console.print(f"[green]✅ MCP Server loads correctly ({len(tools)} tools registered)[/green]")
+            console.print(
+                f"[green]✅ MCP Server loads correctly ({len(tools)} tools registered)[/green]"
+            )
             return True
         else:
             console.print(f"[red]❌ MCP Server missing required tools: {missing}[/red]")
@@ -83,10 +85,13 @@ def check_claude_config() -> None:
     # Import dynamically to avoid circular imports or path issues
     try:
         from peircean.mcp.setup import get_default_config_path
+
         config_path = get_default_config_path()
 
         if not config_path.exists():
-            console.print("[yellow]⚠️  Claude Desktop config not found (normal if not installed)[/yellow]")
+            console.print(
+                "[yellow]⚠️  Claude Desktop config not found (normal if not installed)[/yellow]"
+            )
             return
 
         try:
@@ -113,7 +118,7 @@ def check_claude_config() -> None:
                 console.print("[blue]   Run 'peircean install' to configure[/blue]")
 
         except json.JSONDecodeError:
-             console.print("[red]❌ Claude config file is invalid JSON[/red]")
+            console.print("[red]❌ Claude config file is invalid JSON[/red]")
 
     except ImportError:
         pass
@@ -141,6 +146,7 @@ def main() -> int:
     else:
         console.print("\n[bold red]System check failed. Please review errors above.[/bold red]")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

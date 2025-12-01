@@ -45,9 +45,7 @@ Examples:
     parser.add_argument(
         "--install", action="store_true", help="Install MCP server to Claude Desktop config"
     )
-    parser.add_argument(
-        "--verify", action="store_true", help="Verify installation and environment"
-    )
+    parser.add_argument("--verify", action="store_true", help="Verify installation and environment")
 
     parser.add_argument(
         "--json", action="store_true", help="Output JSON (for install or interactive mode)"
@@ -149,13 +147,14 @@ def main() -> int:
     # Handle Management Commands
     if args.verify:
         from .validate import main as validate_main
+
         return validate_main()
 
     if args.install:
         from .mcp.setup import main as setup_main
 
         if args.json:
-             # Just output JSON, don't write
+            # Just output JSON, don't write
             setup_main(["--json"])
         else:
             # Invoke setup with --write default
