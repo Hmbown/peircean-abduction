@@ -372,7 +372,7 @@ class OllamaProvider(BaseProvider):
             # Configure base URL if provided
             base_url = self.config.get("base_url", "http://localhost:11434")
             # Use setattr to avoid mypy errors with dynamic attributes
-            setattr(ollama, "host", base_url)
+            setattr(ollama, "host", base_url)  # noqa: B010
             return ollama
         except ImportError:
             raise ImportError(
