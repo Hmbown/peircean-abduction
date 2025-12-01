@@ -114,7 +114,7 @@ Configuration:
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
-    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.0")
+    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.1")
 
     return parser
 

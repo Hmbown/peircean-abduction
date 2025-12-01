@@ -1,0 +1,582 @@
+# Peircean Abduction: Configuration Guide
+
+Comprehensive guide to configuring Peircean Abduction for optimal performance and usage with multiple LLM providers.
+
+## Table of Contents
+
+- [Configuration Overview](#configuration-overview)
+- [Environment Variables](#environment-variables)
+- [Provider Configuration](#provider-configuration)
+- [.env File Setup](#env-file-setup)
+- [Feature Toggles](#feature-toggles)
+- [Advanced Configuration](#advanced-configuration)
+- [Migration Guide](#migration-guide)
+- [Troubleshooting](#troubleshooting)
+
+## Configuration Overview
+
+Peircean Abduction uses a hierarchical configuration system that loads settings in the following order of precedence:
+
+1. **Environment variables** (highest priority)
+2. **.env file** (current directory and parent directories)
+3. **Default values** (lowest priority)
+
+This design allows for flexible configuration across different environments while maintaining sensible defaults.
+
+`★ Insight ─────────────────────────────────────`
+The configuration system is designed to work seamlessly out of the box like Hegelion - prompt-only by default with optional interactive mode. Environment variables provide powerful customization without requiring code changes.
+`─────────────────────────────────────────────────`
+
+## Environment Variables
+
+### Core Configuration
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PEIRCEAN_PROVIDER` | string | `anthropic` | LLM provider to use |
+| `PEIRCEAN_MODEL` | string | Provider-dependent | Default model for the provider |
+| `PEIRCEAN_API_KEY` | string | `None` | API key for the provider |
+| `PEIRCEAN_BASE_URL` | string | `None` | Custom API base URL |
+| `PEIRCEAN_TIMEOUT_SECONDS` | integer | `60` | Request timeout in seconds |
+| `PEIRCEAN_MAX_RETRIES` | integer | `3` | Maximum retry attempts |
+
+### Feature Toggles
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PEIRCEAN_ENABLE_COUNCIL` | boolean | `true` | Enable Council of Critics evaluation |
+| `PEIRCEAN_INTERACTIVE_MODE` | boolean | `false` | Direct LLM API calls (vs prompt-only) |
+| `PEIRCEAN_DEBUG_MODE` | boolean | `false` | Enable verbose debug output |
+
+### Default Behavior
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PEIRCEAN_DEFAULT_DOMAIN` | string | `general` | Default domain for analysis |
+| `PEIRCEAN_DEFAULT_NUM_HYPOTHESES` | integer | `5` | Default number of hypotheses |
+
+### MCP Configuration
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `PEIRCEAN_MCP_SERVER_HOST` | string | `localhost` | MCP server host |
+| `PEIRCEAN_MCP_SERVER_PORT` | integer | `None` | MCP server port (None for auto) |
+
+## Provider Configuration
+
+### Anthropic Claude
+
+```bash
+# Provider selection
+export PEIRCEAN_PROVIDER=anthropic
+
+# Model selection
+export PEIRCEAN_MODEL=claude-3-sonnet-20241022
+# Available: claude-3-sonnet-20241022, claude-3-haiku-20241022, claude-3-opus-20241022
+
+# API key
+export PEIRCEAN_API_KEY=sk-ant-...
+# OR use Anthropic-specific variable
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Optional: Custom base URL
+export PEIRCEAN_BASE_URL=https://api.anthropic.com
+```
+
+**Installation:**
+```bash
+pip install peircean-abduction[anthropic]
+```
+
+### OpenAI GPT
+
+```bash
+# Provider selection
+export PEIRCEAN_PROVIDER=openai
+
+# Model selection
+export PEIRCEAN_MODEL=gpt-4
+# Available: gpt-4, gpt-4-turbo, gpt-3.5-turbo
+
+# API key
+export PEIRCEAN_API_KEY=sk-...
+# OR use OpenAI-specific variable
+export OPENAI_API_KEY=sk-...
+
+# Optional: Organization
+export OPENAI_ORG_ID=org-...
+
+# Optional: Custom base URL
+export PEIRCEAN_BASE_URL=https://api.openai.com/v1
+```
+
+**Installation:**
+```bash
+pip install peircean-abduction[openai]
+```
+
+### Google Gemini
+
+```bash
+# Provider selection
+export PEIRCEAN_PROVIDER=gemini
+
+# Model selection
+export PEIRCEAN_MODEL=gemini-pro
+# Available: gemini-pro, gemini-pro-vision
+
+# API key
+export PEIRCEAN_API_KEY=...
+# OR use Gemini-specific variable
+export GEMINI_API_KEY=...
+
+# Note: Gemini doesn't support custom base URLs
+```
+
+**Installation:**
+```bash
+pip install peircean-abduction[gemini]
+```
+
+### Ollama (Local Models)
+
+```bash
+# Provider selection
+export PEIRCEAN_PROVIDER=ollama
+
+# Model selection
+export PEIRCEAN_MODEL=llama2
+# Available: Any model installed in Ollama
+
+# Server configuration
+export PEIRCEAN_BASE_URL=http://localhost:11434
+# OR use Ollama-specific variable
+export OLLAMA_HOST=http://localhost:11434
+
+# No API key required for local models
+```
+
+**Installation:**
+```bash
+pip install peircean-abduction[ollama]
+```
+
+### All Providers
+
+```bash
+# Install support for all providers
+pip install peircean-abduction[all]
+```
+
+## .env File Setup
+
+### Quick Setup
+
+```bash
+# Create .env file from template
+cp .env.example .env
+
+# Edit with your configuration
+nano .env
+```
+
+### Complete .env Example
+
+```bash
+# Peircean Abduction Configuration
+# Generated by configuration wizard
+
+# Provider Selection
+PEIRCEAN_PROVIDER=anthropic
+PEIRCEAN_MODEL=claude-3-sonnet-20241022
+
+# API Keys
+PEIRCEAN_API_KEY=your_anthropic_api_key_here
+# Alternative: ANTHROPIC_API_KEY=your_key_here
+
+# Feature Toggles
+PEIRCEAN_ENABLE_COUNCIL=true
+PEIRCEAN_INTERACTIVE_MODE=false
+PEIRCEAN_DEBUG_MODE=false
+
+# Performance Settings
+PEIRCEAN_TEMPERATURE=0.7
+PEIRCEAN_TIMEOUT_SECONDS=60
+PEIRCEAN_MAX_RETRIES=3
+
+# Default Abduction Settings
+PEIRCEAN_DEFAULT_DOMAIN=general
+PEIRCEAN_DEFAULT_NUM_HYPOTHESES=5
+
+# Logging
+PEIRCEAN_LOG_LEVEL=info
+```
+
+### Multiple Environment Files
+
+Peircean Abduction searches for `.env` files in the following order:
+
+1. `.env` (current directory)
+2. `.env.local` (current directory)
+3. `.env.development` (current directory)
+4. `.env.production` (current directory)
+5. Parent directories (upward search)
+
+This allows for environment-specific configurations:
+
+```bash
+# Development environment
+# .env.development
+PEIRCEAN_DEBUG_MODE=true
+PEIRCEAN_PROVIDER=ollama  # Use local models for dev
+
+# Production environment
+# .env.production
+PEIRCEAN_DEBUG_MODE=false
+PEIRCEAN_PROVIDER=anthropic
+PEIRCEAN_API_KEY=${PRODUCTION_ANTHROPIC_KEY}
+```
+
+## Feature Toggles
+
+### Interactive Mode
+
+Enable direct LLM API calls instead of prompt generation:
+
+```bash
+export PEIRCEAN_INTERACTIVE_MODE=true
+```
+
+**Behavior Change:**
+- **Default (false)**: Generates prompts for external LLM use (Hegelion-style)
+- **Enabled (true)**: Makes direct API calls to configured provider
+
+### Council of Critics
+
+Enable multi-perspective evaluation:
+
+```bash
+export PEIRCEAN_ENABLE_COUNCIL=true
+```
+
+**Available Critics:**
+- **Empiricist**: Focuses on evidence and data
+- **Logician**: Checks logical consistency
+- **Pragmatist**: Considers practical implications
+- **Economist**: Evaluates cost/benefit tradeoffs
+- **Skeptic**: Challenges assumptions and identifies weaknesses
+
+### Debug Mode
+
+Enable verbose logging and output:
+
+```bash
+export PEIRCEAN_DEBUG_MODE=true
+```
+
+**Debug Output Includes:**
+- Configuration loading details
+- Provider initialization status
+- Request/response logging (in interactive mode)
+- Performance timing information
+
+## Advanced Configuration
+
+### Programmatic Configuration
+
+```python
+from peircean.config import PeirceanConfig, Provider
+
+# Custom configuration
+config = PeirceanConfig(
+    provider=Provider.OPENAI,
+    model="gpt-4",
+    temperature=0.8,
+    max_retries=5,
+    enable_council=True,
+    debug_mode=False
+)
+
+# Use with PeirceanAbduction
+from peircean import PeirceanAbduction
+
+abduction = PeirceanAbduction(config=config)
+result = abduction.analyze("Your observation here")
+```
+
+### Configuration Validation
+
+```python
+from peircean.config import PeirceanConfig
+
+config = PeirceanConfig()
+issues = config.validate_config()
+
+if issues:
+    print("Configuration issues found:")
+    for issue in issues:
+        print(f"  • {issue}")
+else:
+    print("Configuration is valid!")
+```
+
+### Provider-Specific Configuration
+
+```python
+from peircean.providers import get_provider_registry
+from peircean.config import get_config
+
+# Get provider-specific information
+config = get_config()
+registry = get_provider_registry()
+
+# Check provider capabilities
+provider_info = registry.get_provider_info(config.provider.value)
+print(f"Provider: {provider_info.display_name}")
+print(f"Max tokens: {provider_info.capabilities.max_tokens}")
+```
+
+## Migration Guide
+
+### From v1.1.x to v1.2.0
+
+#### Breaking Changes
+
+1. **Configuration System**: New centralized configuration system
+2. **Provider Selection**: Environment-based provider switching
+3. **Feature Toggles**: New environment variables for features
+
+#### Migration Steps
+
+1. **Backup Current Configuration**
+```bash
+# If you have existing configuration, back it up
+cp your-old-config.py config-backup.py
+```
+
+2. **Update Environment Variables**
+```bash
+# Old approach: Direct imports or hardcoded config
+# New approach: Environment variables
+
+# Set your provider
+export PEIRCEAN_PROVIDER=anthropic
+export PEIRCEAN_API_KEY=your_api_key_here
+
+# Optional features
+export PEIRCEAN_ENABLE_COUNCIL=true
+export PEircean_INTERACTIVE_MODE=false
+```
+
+3. **Update Code Using Direct Configuration**
+
+```python
+# Old approach:
+from peircean.core.models import Observation
+from peircean.core.agent import AbductionAgent
+
+# New approach:
+from peircean import PeirceanAbduction
+from peircean.config import get_config
+
+# Initialize with environment configuration
+abduction = PeirceanAbduction()
+config = get_config()
+```
+
+4. **Verify Migration**
+```bash
+# Check your new configuration
+peircean config show
+
+# Validate setup
+peircean config validate
+
+# Test functionality
+peircean "Test observation"
+```
+
+### Migration Examples
+
+#### Before (v1.1.x)
+```python
+# Hardcoded provider setup
+from anthropic import Anthropic
+
+client = Anthropic(api_key="sk-...")
+agent = AbductionAgent(llm_client=client)
+```
+
+#### After (v1.2.0)
+```python
+# Environment-based configuration
+from peircean import PeirceanAbduction
+
+abduction = PeirceanAbduction()
+# Provider and API key loaded from environment
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Provider not available"
+
+**Symptoms:**
+- Configuration shows "⚠️ Config needed"
+- API calls fail in interactive mode
+
+**Solutions:**
+1. Install provider dependencies:
+   ```bash
+   pip install peircean-abduction[anthropic]  # Or openai, gemini, ollama
+   ```
+
+2. Set correct environment variable:
+   ```bash
+   export PEIRCEAN_PROVIDER=anthropic
+   export ANTHROPIC_API_KEY=your_key
+   ```
+
+3. Verify configuration:
+   ```bash
+   peircean config validate
+   ```
+
+#### "Module not found" in Claude Desktop
+
+**Symptoms:**
+- Claude shows error about missing peircean module
+- MCP tools not available
+
+**Solutions:**
+1. Re-run installation from active environment:
+   ```bash
+   peircean --install
+   ```
+
+2. Ensure correct Python interpreter:
+   ```bash
+   which python  # Should point to your virtual environment
+   ```
+
+3. Verify installation:
+   ```bash
+   python -c "import peircean; print('✅ Import works')"
+   ```
+
+#### Configuration Not Loading
+
+**Symptoms:**
+- Environment variables not recognized
+- Default settings being used
+
+**Solutions:**
+1. Check .env file location:
+   ```bash
+   peircean config show  # Shows current loaded config
+   ```
+
+2. Ensure .env file is in search path:
+   ```bash
+   ls -la .env*  # Check what env files exist
+   ```
+
+3. Verify environment variable precedence:
+   ```bash
+   env | grep PEIRCEAN_  # Check what env vars are set
+   ```
+
+#### Interactive Mode Not Working
+
+**Symptoms:**
+- Prompts still generated despite `PEIRCEAN_INTERACTIVE_MODE=true`
+- No direct LLM calls made
+
+**Solutions:**
+1. Verify API key is properly set:
+   ```bash
+   peircean config validate
+   ```
+
+2. Check provider installation:
+   ```bash
+   pip install peircean-abduction[anthropic]  # Or your provider
+   ```
+
+3. Test provider connectivity:
+   ```bash
+   peircean --verify  # Includes provider health checks
+   ```
+
+### Debug Configuration Issues
+
+#### Check Configuration Loading
+
+```python
+import os
+from peircean.config import get_config, reload_config
+
+# Reload configuration from environment
+config = reload_config()
+print(f"Provider: {config.provider.value}")
+print(f"API Key Set: {bool(config.api_key)}")
+print(f"Interactive Mode: {config.interactive_mode}")
+```
+
+#### Test Provider Directly
+
+```python
+from peircean.providers import get_provider_client
+from peircean.config import get_config
+
+config = get_config()
+client = get_provider_client(config.provider.value, config.get_provider_config())
+
+if client:
+    print(f"✅ {config.provider.value} client available")
+    print(f"Status: {'Available' if client.is_available() else 'Configuration issue'}")
+else:
+    print(f"❌ {config.provider.value} client not available")
+```
+
+## Getting Help
+
+### Configuration Commands
+
+```bash
+# Show current configuration
+peircean config show
+
+# Validate configuration
+peircean config validate
+
+# List available providers
+peircean config providers
+
+# Interactive setup wizard
+peircean config wizard
+```
+
+### System Diagnostics
+
+```bash
+# Comprehensive system check
+peircean --verify
+
+# JSON output for automation
+peircean --verify --json
+```
+
+### Documentation
+
+- [**API Reference**](../reference/api.md) - Complete configuration API documentation
+- [**User Guide**](user-guide.md) - Usage examples and best practices
+- [**Installation Guide**](../getting-started/installation.md) - Platform-specific setup instructions
+- [**Quick Start**](../getting-started/quickstart.md) - Get up and running in 5 minutes
+- [**MCP Integration Guide**](mcp-integration.md) - IDE setup and usage
+- [**Contributing**](../../CONTRIBUTING.md) - Development setup and guidelines
+
+---
+
+**Pro Tip**: Start with the interactive configuration wizard (`peircean config wizard`) to get set up quickly, then customize with environment variables as needed.

@@ -8,6 +8,8 @@ Get up and running with Peircean Abduction in under 5 minutes.
 pip install peircean-abduction
 ```
 
+For detailed platform-specific installation instructions, virtual environment setup, and troubleshooting, see the [Installation Guide](installation.md).
+
 ## Option 1: Prompt Mode (Any LLM)
 
 The simplest way to use Peircean Abduction is to generate prompts for your existing LLM setup:
