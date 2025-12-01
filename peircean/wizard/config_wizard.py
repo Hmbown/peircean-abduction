@@ -9,44 +9,17 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from rich.console import Console as RichConsole
-    from rich.panel import Panel as RichPanel
-    from rich.prompt import Confirm as RichConfirm
-    from rich.prompt import Prompt as RichPrompt
-    from rich.table import Table as RichTable
-    from rich.text import Text as RichText
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
 
-Console: type[RichConsole] | None = None
-Panel: type[RichPanel] | None = None
-Confirm: type[RichConfirm] | None = None
-Prompt: type[RichPrompt] | None = None
-Table: type[RichTable] | None = None
-Text: type[RichText] | None = None
+from ..config import Provider
+from ..providers import get_provider_registry
+from ..utils.env import detect_provider_from_env
 
-try:
-    from rich.console import Console as _Console
-    from rich.panel import Panel as _Panel
-    from rich.prompt import Confirm as _Confirm
-    from rich.prompt import Prompt as _Prompt
-    from rich.table import Table as _Table
-    from rich.text import Text as _Text
-
-    from ..config import Provider
-    from ..providers import get_provider_registry
-    from ..utils.env import detect_provider_from_env
-
-    Console = _Console
-    Panel = _Panel
-    Confirm = _Confirm
-    Prompt = _Prompt
-    Table = _Table
-    Text = _Text
-    RICH_AVAILABLE = True
-except ImportError:
-    RICH_AVAILABLE = False
+RICH_AVAILABLE = True
 
 
 def rich_print(text: str, style: str = "") -> None:
