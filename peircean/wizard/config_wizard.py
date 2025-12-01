@@ -19,92 +19,44 @@ from ..config import Provider
 from ..providers import get_provider_registry
 from ..utils.env import detect_provider_from_env
 
-RICH_AVAILABLE = True
-
 
 def rich_print(text: str, style: str = "") -> None:
-    """Fallback print function when Rich is not available."""
-    if RICH_AVAILABLE and Console:
-        assert Console is not None
-        console = Console()
-        console.print(text, style=style)
-    else:
-        print(text)
+    """Print text using Rich console."""
+    console = Console()
+    console.print(text, style=style)
 
 
 def rich_prompt(
     message: str, choices: list | None = None, default: str | None = None, password: bool = False
 ) -> str:
-    """Fallback prompt function when Rich is not available."""
-    if RICH_AVAILABLE and Prompt:
-        prompt = Prompt()
-        if choices:
-            return prompt.ask(message, choices=choices, default=default or "", password=password)
-        else:
-            return prompt.ask(message, default=default or "", password=password)
+    """Prompt user for input using Rich."""
+    prompt = Prompt()
+    if choices:
+        return prompt.ask(message, choices=choices, default=default or "", password=password)
     else:
-        if choices:
-            choice_str = "/".join(choices)
-            if default:
-                message += f" [{choice_str}] ({default})"
-            else:
-                message += f" [{choice_str}]"
-        elif default:
-            message += f" ({default})"
-
-        while True:
-            response = input(f"{message}: ").strip()
-            if not response and default:
-                return default
-            if choices and response in choices:
-                return response
-            if not choices:
-                return response
-            print(f"Please choose from: {', '.join(choices)}")
+        return prompt.ask(message, default=default or "", password=password)
 
 
 def rich_confirm(message: str, default: bool = False) -> bool:
-    """Fallback confirm function when Rich is not available."""
-    if RICH_AVAILABLE and Confirm:
-        confirm = Confirm()
-        return confirm.ask(message, default=default)
-    else:
-        default_str = "Y/n" if default else "y/N"
-        while True:
-            response = input(f"{message} [{default_str}]: ").strip().lower()
-            if not response:
-                return default
-            if response in ["y", "yes"]:
-                return True
-            if response in ["n", "no"]:
-                return False
-            print("Please answer 'y' or 'n'")
+    """Confirm action using Rich."""
+    confirm = Confirm()
+    return confirm.ask(message, default=default)
 
 
 def welcome_message() -> None:
     """Display welcome message."""
-    if RICH_AVAILABLE and Panel and Console:
-        assert Console is not None
-        console = Console()
-        console.print(
-            Panel(
-                "[bold blue]🔮 Peircean Abduction Configuration Wizard[/bold blue]\n\n"
-                "This wizard will help you configure your Peircean Abduction setup.\n"
-                "You'll be able to choose your LLM provider, set up API keys,\n"
-                "and configure optional features like interactive mode.\n\n"
-                "[dim]You can press Ctrl+C to exit at any time.[/dim]",
-                title="Welcome",
-                border_style="blue",
-            )
+    console = Console()
+    console.print(
+        Panel(
+            "[bold blue]🔮 Peircean Abduction Configuration Wizard[/bold blue]\n\n"
+            "This wizard will help you configure your Peircean Abduction setup.\n"
+            "You'll be able to choose your LLM provider, set up API keys,\n"
+            "and configure optional features like interactive mode.\n\n"
+            "[dim]You can press Ctrl+C to exit at any time.[/dim]",
+            title="Welcome",
+            border_style="blue",
         )
-    else:
-        print("\n" + "=" * 60)
-        print("🔮 Peircean Abduction Configuration Wizard")
-        print("=" * 60)
-        print("\nThis wizard will help you configure your Peircean Abduction setup.")
-        print("You'll be able to choose your LLM provider, set up API keys,")
-        print("and configure optional features like interactive mode.")
-        print("\nYou can press Ctrl+C to exit at any time.\n")
+    )
 
 
 def select_provider() -> Provider:
@@ -115,8 +67,7 @@ def select_provider() -> Provider:
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
-    if RICH_AVAILABLE and Table and Console:
-        assert Console is not None
+    if Table and Console:
         console = Console()
         table = Table(title="Available Providers")
         table.add_column("Choice", style="cyan", width=8)
@@ -129,12 +80,6 @@ def select_provider() -> Provider:
                 table.add_row(str(i), provider_name, provider_info.description)
 
         console.print(table)
-    else:
-        print("\nAvailable Providers:")
-        for i, provider_name in enumerate(providers, 1):
-            provider_info = registry.get_provider_info(provider_name)
-            if provider_info:
-                print(f"  {i}. {provider_name} - {provider_info.description}")
 
     # Auto-detect if possible
     detected = detect_provider_from_env()
@@ -342,32 +287,20 @@ def setup_ide_integration() -> bool:
 
 def completion_summary(env_file: Path | None, ide_setup: bool) -> None:
     """Display completion summary."""
-    if RICH_AVAILABLE and Panel and Console:
-        assert Console is not None
-        console = Console()
-        console.print(
-            Panel(
-                "[bold green]✨ Configuration Complete! ✨[/bold green]\n\n"
-                "Your Peircean Abduction setup is ready to use.\n\n"
-                "[bold]Next steps:[/bold]\n"
-                "• peircean config show     - View your configuration\n"
-                "• peircean --verify        - Verify your setup\n"
-                "• peircean 'observation'   - Start analyzing\n"
-                "\n[dim]Thank you for using Peircean Abduction! 🚀[/dim]",
-                title="Setup Complete",
-                border_style="green",
-            )
+    console = Console()
+    console.print(
+        Panel(
+            "[bold green]✨ Configuration Complete! ✨[/bold green]\n\n"
+            "Your Peircean Abduction setup is ready to use.\n\n"
+            "[bold]Next steps:[/bold]\n"
+            "• peircean config show     - View your configuration\n"
+            "• peircean --verify        - Verify your setup\n"
+            "• peircean 'observation'   - Start analyzing\n"
+            "\n[dim]Thank you for using Peircean Abduction! 🚀[/dim]",
+            title="Setup Complete",
+            border_style="green",
         )
-    else:
-        print("\n" + "=" * 60)
-        print("✨ Configuration Complete! ✨")
-        print("=" * 60)
-        print("\nYour Peircean Abduction setup is ready to use.")
-        print("\nNext steps:")
-        print("• peircean config show     - View your configuration")
-        print("• peircean --verify        - Verify your setup")
-        print("• peircean 'observation'   - Start analyzing")
-        print("\nThank you for using Peircean Abduction! 🚀")
+    )
 
     if env_file:
         rich_print(f"\n[dim]Configuration saved to: {env_file.absolute()}[/dim]")
