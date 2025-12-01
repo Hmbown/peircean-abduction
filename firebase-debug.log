@@ -1,0 +1,24 @@
+[debug] [2025-11-30T23:46:44.105Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.106Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-11-30T23:46:44.111Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.111Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-11-30T23:46:44.198Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.198Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-11-30T23:46:44.198Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.198Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-11-30T23:46:44.224Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.224Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-11-30T23:46:44.224Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-30T23:46:44.224Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.732Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.733Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.738Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.738Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.820Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.820Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.821Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.821Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.845Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.845Z] > authorizing via signed-in user (hunter@shannonlabs.dev)
+[debug] [2025-12-01T16:04:52.845Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-01T16:04:52.845Z] > authorizing via signed-in user (hunter@shannonlabs.dev)

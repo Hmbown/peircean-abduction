@@ -153,7 +153,7 @@ def main() -> int:
 
     if args.install:
         from .mcp.setup import main as setup_main
-        
+
         if args.json:
              # Just output JSON, don't write
             setup_main(["--json"])
