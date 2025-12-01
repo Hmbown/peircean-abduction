@@ -12,22 +12,40 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from typing import Optional, Type, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rich.console import Console as RichConsole
+    from rich.panel import Panel as RichPanel
+    from rich.prompt import Confirm as RichConfirm
+    from rich.prompt import Prompt as RichPrompt
+    from rich.table import Table as RichTable
+    from rich.text import Text as RichText
+
+Console: Optional[Type[RichConsole]] = None
+Panel: Optional[Type[RichPanel]] = None
+Confirm: Optional[Type[RichConfirm]] = None
+Prompt: Optional[Type[RichPrompt]] = None
+Table: Optional[Type[RichTable]] = None
+Text: Optional[Type[RichText]] = None
+
 try:
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.prompt import Confirm, Prompt
-    from rich.table import Table
-    from rich.text import Text
+    from rich.console import Console as _Console
+    from rich.panel import Panel as _Panel
+    from rich.prompt import Confirm as _Confirm
+    from rich.prompt import Prompt as _Prompt
+    from rich.table import Table as _Table
+    from rich.text import Text as _Text
+
+    Console = _Console
+    Panel = _Panel
+    Confirm = _Confirm
+    Prompt = _Prompt
+    Table = _Table
+    Text = _Text
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
-    # Fallback to basic input/print
-    Console = None
-    Panel = None
-    Confirm = None
-    Prompt = None
-    Table = None
-    Text = None
 
 from ..config import PeirceanConfig, Provider
 from ..providers import get_provider_registry
@@ -37,20 +55,21 @@ from ..utils.env import create_example_env_file, detect_provider_from_env
 def rich_print(text: str, style: str = "") -> None:
     """Fallback print function when Rich is not available."""
     if RICH_AVAILABLE and Console:
+        assert Console is not None
         console = Console()
         console.print(text, style=style)
     else:
         print(text)
 
 
-def rich_prompt(message: str, choices: Optional[list] = None, default: Optional[str] = None) -> str:
+def rich_prompt(message: str, choices: Optional[list] = None, default: Optional[str] = None, password: bool = False) -> str:
     """Fallback prompt function when Rich is not available."""
     if RICH_AVAILABLE and Prompt:
         prompt = Prompt()
         if choices:
-            return prompt.ask(message, choices=choices, default=default)
+            return prompt.ask(message, choices=choices, default=default or "", password=password)
         else:
-            return prompt.ask(message, default=default)
+            return prompt.ask(message, default=default or "", password=password)
     else:
         if choices:
             choice_str = "/".join(choices)
@@ -92,21 +111,24 @@ def rich_confirm(message: str, default: bool = False) -> bool:
 
 def welcome_message() -> None:
     """Display welcome message."""
-    if RICH_AVAILABLE and Panel:
+    if RICH_AVAILABLE and Panel and Console:
+        assert Console is not None
         console = Console()
-        console.print(Panel(
-            "[bold blue]🔮 Peircean Abduction Configuration Wizard[/bold blue]\n\n"
-            "This wizard will help you configure your Peircean Abduction setup.\n"
-            "You'll be able to choose your LLM provider, set up API keys,\n"
-            "and configure optional features like interactive mode.\n\n"
-            "[dim]You can press Ctrl+C to exit at any time.[/dim]",
-            title="Welcome",
-            border_style="blue"
-        ))
+        console.print(
+            Panel(
+                "[bold blue]🔮 Peircean Abduction Configuration Wizard[/bold blue]\n\n"
+                "This wizard will help you configure your Peircean Abduction setup.\n"
+                "You'll be able to choose your LLM provider, set up API keys,\n"
+                "and configure optional features like interactive mode.\n\n"
+                "[dim]You can press Ctrl+C to exit at any time.[/dim]",
+                title="Welcome",
+                border_style="blue",
+            )
+        )
     else:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🔮 Peircean Abduction Configuration Wizard")
-        print("="*60)
+        print("=" * 60)
         print("\nThis wizard will help you configure your Peircean Abduction setup.")
         print("You'll be able to choose your LLM provider, set up API keys,")
         print("and configure optional features like interactive mode.")
@@ -121,7 +143,8 @@ def select_provider() -> Provider:
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
-    if RICH_AVAILABLE and Table:
+    if RICH_AVAILABLE and Table and Console:
+        assert Console is not None
         console = Console()
         table = Table(title="Available Providers")
         table.add_column("Choice", style="cyan", width=8)
@@ -152,11 +175,7 @@ def select_provider() -> Provider:
 
     # Manual selection
     choices = [str(i) for i in range(1, len(providers) + 1)]
-    choice = rich_prompt(
-        "\nSelect your provider (enter number)",
-        choices=choices,
-        default="1"
-    )
+    choice = rich_prompt("\nSelect your provider (enter number)", choices=choices, default="1")
 
     selected_index = int(choice) - 1
     selected_provider = providers[selected_index]
@@ -171,16 +190,10 @@ def configure_provider(provider: Provider) -> dict[str, str]:
 
     if provider == Provider.OLLAMA:
         # Ollama configuration
-        host = rich_prompt(
-            "Ollama host URL",
-            default="http://localhost:11434"
-        )
+        host = rich_prompt("Ollama host URL", default="http://localhost:11434")
         config["base_url"] = host
 
-        model = rich_prompt(
-            "Ollama model name",
-            default="llama2"
-        )
+        model = rich_prompt("Ollama model name", default="llama2")
         config["model"] = model
 
         rich_print("\n[dim]Note: Make sure Ollama is running and the model is pulled![/dim]")
@@ -190,16 +203,10 @@ def configure_provider(provider: Provider) -> dict[str, str]:
         env_var = f"{provider.value.upper()}_API_KEY"
         rich_print(f"\nYou can set your API key via the {env_var} environment variable.")
 
-        use_env_key = rich_confirm(
-            f"Use {env_var} environment variable?",
-            default=True
-        )
+        use_env_key = rich_confirm(f"Use {env_var} environment variable?", default=True)
 
         if not use_env_key:
-            api_key = rich_prompt(
-                f"Enter your {provider.value.title()} API key",
-                password=True
-            )
+            api_key = rich_prompt(f"Enter your {provider.value.title()} API key", password=True)
             config["api_key"] = api_key
         else:
             rich_print(f"[green]✅ Will use {env_var} environment variable[/green]")
@@ -220,7 +227,7 @@ def configure_provider(provider: Provider) -> dict[str, str]:
                 model_choice = rich_prompt(
                     "Select model (enter number)",
                     choices=[str(i) for i in range(1, len(model_choices) + 1)],
-                    default="1"
+                    default="1",
                 )
                 selected_model = model_choices[int(model_choice) - 1]
 
@@ -236,38 +243,30 @@ def configure_features() -> dict[str, bool]:
     features = {}
 
     # Interactive mode
-    rich_print("\n[dim]Interactive mode allows direct LLM API calls instead of just generating prompts.[/dim]")
+    rich_print(
+        "\n[dim]Interactive mode allows direct LLM API calls instead of just generating prompts.[/dim]"
+    )
     rich_print("[dim]This is optional - the default prompt-only mode works like Hegelion.[/dim]")
 
-    interactive = rich_confirm(
-        "Enable interactive mode (requires API key)?",
-        default=False
-    )
+    interactive = rich_confirm("Enable interactive mode (requires API key)?", default=False)
     features["interactive_mode"] = interactive
 
     # Council of Critics
-    council = rich_confirm(
-        "Enable Council of Critics evaluation by default?",
-        default=True
-    )
+    council = rich_confirm("Enable Council of Critics evaluation by default?", default=True)
     features["enable_council"] = council
 
     # Debug mode
-    debug = rich_confirm(
-        "Enable debug mode for verbose output?",
-        default=False
-    )
+    debug = rich_confirm("Enable debug mode for verbose output?", default=False)
     features["debug_mode"] = debug
 
     return features
 
 
-def create_env_file(provider: Provider, config: dict[str, str], features: dict[str, bool]) -> Optional[Path]:
+def create_env_file(
+    provider: Provider, config: dict[str, str], features: dict[str, bool]
+) -> Optional[Path]:
     """Create .env file with user configuration."""
-    create_env = rich_confirm(
-        "\nCreate .env file with your configuration?",
-        default=True
-    )
+    create_env = rich_confirm("\nCreate .env file with your configuration?", default=True)
 
     if not create_env:
         return None
@@ -276,10 +275,7 @@ def create_env_file(provider: Provider, config: dict[str, str], features: dict[s
 
     # Check if .env already exists
     if env_path.exists():
-        backup = rich_confirm(
-            ".env file already exists. Create backup?",
-            default=True
-        )
+        backup = rich_confirm(".env file already exists. Create backup?", default=True)
         if backup:
             backup_path = env_path.with_suffix(".env.backup")
             env_path.rename(backup_path)
@@ -312,25 +308,31 @@ def create_env_file(provider: Provider, config: dict[str, str], features: dict[s
 
     # Add provider-specific configuration
     if provider != Provider.OLLAMA and "api_key" in config:
-        content_lines.extend([
-            f"# API Key",
-            f"PEIRCEAN_API_KEY={config['api_key']}",
-            "",
-        ])
+        content_lines.extend(
+            [
+                f"# API Key",
+                f"PEIRCEAN_API_KEY={config['api_key']}",
+                "",
+            ]
+        )
 
     if config.get("base_url"):
-        content_lines.extend([
-            f"# Base URL",
-            f"PEIRCEAN_BASE_URL={config['base_url']}",
-            "",
-        ])
+        content_lines.extend(
+            [
+                f"# Base URL",
+                f"PEIRCEAN_BASE_URL={config['base_url']}",
+                "",
+            ]
+        )
 
     if provider == Provider.OLLAMA:
-        content_lines.extend([
-            f"# Ollama Configuration",
-            f"OLLAMA_HOST={config.get('base_url', 'http://localhost:11434')}",
-            "",
-        ])
+        content_lines.extend(
+            [
+                f"# Ollama Configuration",
+                f"OLLAMA_HOST={config.get('base_url', 'http://localhost:11434')}",
+                "",
+            ]
+        )
 
     # Write .env file
     try:
@@ -349,14 +351,12 @@ def setup_ide_integration() -> bool:
     rich_print("\n[bold]🔗 IDE Integration[/bold]")
     rich_print("Peircean Abduction works best with IDE integration via MCP.")
 
-    setup_ide = rich_confirm(
-        "Set up Claude Desktop/Cursor integration now?",
-        default=True
-    )
+    setup_ide = rich_confirm("Set up Claude Desktop/Cursor integration now?", default=True)
 
     if setup_ide:
         try:
             from ..mcp.setup import main as setup_main
+
             rich_print("\n[blue]Setting up MCP integration...[/blue]")
             setup_main(["--write"])
             return True
@@ -370,23 +370,26 @@ def setup_ide_integration() -> bool:
 
 def completion_summary(env_file: Optional[Path], ide_setup: bool) -> None:
     """Display completion summary."""
-    if RICH_AVAILABLE and Panel:
+    if RICH_AVAILABLE and Panel and Console:
+        assert Console is not None
         console = Console()
-        console.print(Panel(
-            "[bold green]✨ Configuration Complete! ✨[/bold green]\n\n"
-            "Your Peircean Abduction setup is ready to use.\n\n"
-            "[bold]Next steps:[/bold]\n"
-            "• peircean config show     - View your configuration\n"
-            "• peircean --verify        - Verify your setup\n"
-            "• peircean 'observation'   - Start analyzing\n"
-            "\n[dim]Thank you for using Peircean Abduction! 🚀[/dim]",
-            title="Setup Complete",
-            border_style="green"
-        ))
+        console.print(
+            Panel(
+                "[bold green]✨ Configuration Complete! ✨[/bold green]\n\n"
+                "Your Peircean Abduction setup is ready to use.\n\n"
+                "[bold]Next steps:[/bold]\n"
+                "• peircean config show     - View your configuration\n"
+                "• peircean --verify        - Verify your setup\n"
+                "• peircean 'observation'   - Start analyzing\n"
+                "\n[dim]Thank you for using Peircean Abduction! 🚀[/dim]",
+                title="Setup Complete",
+                border_style="green",
+            )
+        )
     else:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("✨ Configuration Complete! ✨")
-        print("="*60)
+        print("=" * 60)
         print("\nYour Peircean Abduction setup is ready to use.")
         print("\nNext steps:")
         print("• peircean config show     - View your configuration")

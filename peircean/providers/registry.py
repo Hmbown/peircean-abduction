@@ -41,9 +41,9 @@ class ProviderInfo:
     capabilities: ProviderCapabilities
     dependency_name: Optional[str] = None
     env_api_key: Optional[str] = None
-    examples: List[str] = None
+    examples: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.examples is None:
             self.examples = []
 
@@ -113,7 +113,7 @@ class BaseProvider(ABC):
     def generate_completion(
         self,
         prompt: str,
-        **kwargs
+        **kwargs: Any
     ) -> Optional[str]:
         """
         Generate completion using the provider (requires API integration).
@@ -129,6 +129,7 @@ class BaseProvider(ABC):
             return None
 
         try:
+            assert self.client is not None
             return self._generate_completion_impl(prompt, **kwargs)
         except Exception:
             return None
@@ -136,7 +137,7 @@ class BaseProvider(ABC):
     def _generate_completion_impl(
         self,
         prompt: str,
-        **kwargs
+        **kwargs: Any
     ) -> str:
         """Implementation-specific completion generation."""
         raise NotImplementedError("Direct completion not implemented for this provider")
@@ -206,8 +207,9 @@ class AnthropicProvider(BaseProvider):
             context=context,
         )
 
-    def _generate_completion_impl(self, prompt: str, **kwargs) -> str:
+    def _generate_completion_impl(self, prompt: str, **kwargs: Any) -> str:
         """Generate completion using Claude."""
+        assert self.client is not None
         messages = [{"role": "user", "content": prompt}]
 
         response = self.client.messages.create(
@@ -217,7 +219,7 @@ class AnthropicProvider(BaseProvider):
             messages=messages,
         )
 
-        return response.content[0].text
+        return str(response.content[0].text)
 
 
 class OpenAIProvider(BaseProvider):
@@ -269,8 +271,9 @@ class OpenAIProvider(BaseProvider):
             context=context,
         )
 
-    def _generate_completion_impl(self, prompt: str, **kwargs) -> str:
+    def _generate_completion_impl(self, prompt: str, **kwargs: Any) -> str:
         """Generate completion using GPT."""
+        assert self.client is not None
         response = self.client.chat.completions.create(
             model=self.config.get("model", "gpt-4"),
             messages=[{"role": "user", "content": prompt}],
@@ -278,7 +281,7 @@ class OpenAIProvider(BaseProvider):
             temperature=kwargs.get("temperature", 0.7),
         )
 
-        return response.choices[0].message.content
+        return str(response.choices[0].message.content)
 
 
 class GeminiProvider(BaseProvider):
@@ -326,8 +329,9 @@ class GeminiProvider(BaseProvider):
             context=context,
         )
 
-    def _generate_completion_impl(self, prompt: str, **kwargs) -> str:
+    def _generate_completion_impl(self, prompt: str, **kwargs: Any) -> str:
         """Generate completion using Gemini."""
+        assert self.client is not None
         model = self.client.GenerativeModel(self.config.get("model", "gemini-pro"))
         response = model.generate_content(
             prompt,
@@ -336,7 +340,7 @@ class GeminiProvider(BaseProvider):
                 "max_output_tokens": kwargs.get("max_tokens", 2048),
             }
         )
-        return response.text
+        return str(response.text)
 
 
 class OllamaProvider(BaseProvider):
@@ -364,7 +368,8 @@ class OllamaProvider(BaseProvider):
             import ollama
             # Configure base URL if provided
             base_url = self.config.get("base_url", "http://localhost:11434")
-            ollama.host = base_url
+            # Type ignore because ollama module is dynamically typed
+            ollama.host = base_url  # type: ignore
             return ollama
         except ImportError:
             raise ImportError("ollama package not installed. Install with: pip install ollama")
@@ -386,8 +391,9 @@ class OllamaProvider(BaseProvider):
             context=context,
         )
 
-    def _generate_completion_impl(self, prompt: str, **kwargs) -> str:
+    def _generate_completion_impl(self, prompt: str, **kwargs: Any) -> str:
         """Generate completion using Ollama."""
+        assert self.client is not None
         response = self.client.chat(
             model=self.config.get("model", "llama2"),
             messages=[{"role": "user", "content": prompt}],
@@ -396,13 +402,13 @@ class OllamaProvider(BaseProvider):
                 "num_predict": kwargs.get("max_tokens", 2048),
             }
         )
-        return response["message"]["content"]
+        return str(response["message"]["content"])
 
 
 class ProviderRegistry:
     """Registry for managing LLM providers."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._providers: Dict[str, Type[BaseProvider]] = {
             "anthropic": AnthropicProvider,
             "openai": OpenAIProvider,

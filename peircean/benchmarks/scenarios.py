@@ -24,7 +24,7 @@ class BenchmarkScenario:
     use_council: bool = True
     expected_min_prompt_length: int = 1000
     expected_max_time_seconds: float = 5.0
-    tags: List[str] = None
+    tags: Optional[List[str]] = None
 
     def __post_init__(self) -> None:
         if self.tags is None:
@@ -181,7 +181,7 @@ def get_scenario_by_name(name: str) -> Optional[BenchmarkScenario]:
 def get_scenarios_by_tag(tag: str) -> List[BenchmarkScenario]:
     """Get all scenarios with a specific tag."""
     scenarios = get_standard_scenarios()
-    return [s for s in scenarios if tag in s.tags]
+    return [s for s in scenarios if s.tags and tag in s.tags]
 
 
 def get_scenarios_by_domain(domain: str) -> List[BenchmarkScenario]:
@@ -193,13 +193,13 @@ def get_scenarios_by_domain(domain: str) -> List[BenchmarkScenario]:
 def get_quick_scenarios() -> List[BenchmarkScenario]:
     """Get quick scenarios for rapid testing."""
     scenarios = get_standard_scenarios()
-    return [s for s in scenarios if "quick" in s.tags]
+    return [s for s in scenarios if s.tags and "quick" in s.tags]
 
 
 def get_complex_scenarios() -> List[BenchmarkScenario]:
     """Get complex scenarios for thorough testing."""
     scenarios = get_standard_scenarios()
-    return [s for s in scenarios if "complex" in s.tags or "maximal" in s.tags]
+    return [s for s in scenarios if s.tags and ("complex" in s.tags or "maximal" in s.tags)]
 
 
 def get_council_scenarios() -> List[BenchmarkScenario]:

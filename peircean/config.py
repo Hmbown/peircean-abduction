@@ -201,7 +201,7 @@ class PeirceanConfig(BaseSettings):
 
     def get_provider_config(self) -> dict[str, Any]:
         """Get provider-specific configuration dictionary."""
-        base_config = {
+        base_config: dict[str, Any] = {
             "api_key": self.api_key,
             "base_url": self.base_url,
             "timeout": self.timeout_seconds,
@@ -260,7 +260,7 @@ class PeirceanConfig(BaseSettings):
 
         if self.provider in provider_models and provider_models[self.provider]:
             valid_models = provider_models[self.provider]
-            if self.model not in valid_models:
+            if valid_models and self.model not in valid_models:
                 issues.append(
                     f"Unknown model '{self.model}' for {self.provider.value}. "
                     f"Known models: {', '.join(valid_models)}"
@@ -362,7 +362,7 @@ def get_provider() -> Provider:
     return get_config().provider
 
 
-def get_model() -> str:
+def get_model() -> Optional[str]:
     """Get the current model."""
     return get_config().model
 

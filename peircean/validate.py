@@ -291,7 +291,7 @@ def check_ide_integrations() -> Dict[str, bool]:
     """Check IDE integration status."""
     console.print("\n[bold]IDE Integration Status:[/bold]")
 
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Claude Desktop
     try:
@@ -337,7 +337,7 @@ def main() -> int:
     console.print(Panel("[bold blue]🔍 Peircean Abduction Enhanced System Check[/bold blue]"))
 
     all_passed = True
-    results = {}
+    results: Dict[str, Any] = {}
 
     with Status("Performing comprehensive system check...", spinner="dots"):
         # Basic checks

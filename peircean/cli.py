@@ -114,7 +114,7 @@ Configuration:
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
-    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.1")
+    parser.add_argument("--version", action="version", version="peircean-abduction 1.2.2")
 
     return parser
 
@@ -285,7 +285,7 @@ def cmd_config_validate() -> int:
     """Validate configuration."""
     config = get_config()
 
-    console.print(Panel("[bold blue]Configuration Validation[/bold blue]"))
+    console.print("[bold blue]Peircean Abduction CLI v1.2.2[/bold blue]")
 
     # Validate general configuration
     issues = config.validate_config()

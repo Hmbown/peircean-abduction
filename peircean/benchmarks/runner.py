@@ -66,113 +66,58 @@ Examples:
     )
 
     # Scenario selection
-    parser.add_argument(
-        "--scenario",
-        type=str,
-        help="Run specific scenario by name"
-    )
+    parser.add_argument("--scenario", type=str, help="Run specific scenario by name")
 
     parser.add_argument(
         "--domain",
         type=str,
         choices=["general", "financial", "legal", "medical", "technical", "scientific"],
-        help="Run scenarios for specific domain"
+        help="Run scenarios for specific domain",
     )
 
-    parser.add_argument(
-        "--tag",
-        type=str,
-        help="Run scenarios with specific tag"
-    )
+    parser.add_argument("--tag", type=str, help="Run scenarios with specific tag")
+
+    parser.add_argument("--quick", action="store_true", help="Run quick scenarios only")
+
+    parser.add_argument("--complex", action="store_true", help="Run complex scenarios only")
 
     parser.add_argument(
-        "--quick",
-        action="store_true",
-        help="Run quick scenarios only"
-    )
-
-    parser.add_argument(
-        "--complex",
-        action="store_true",
-        help="Run complex scenarios only"
-    )
-
-    parser.add_argument(
-        "--council",
-        action="store_true",
-        help="Run Council of Critics scenarios only"
+        "--council", action="store_true", help="Run Council of Critics scenarios only"
     )
 
     # Provider testing
     parser.add_argument(
-        "--providers",
-        action="store_true",
-        help="Test provider availability and configuration"
+        "--providers", action="store_true", help="Test provider availability and configuration"
     )
 
-    parser.add_argument(
-        "--provider",
-        type=str,
-        help="Test specific provider"
-    )
+    parser.add_argument("--provider", type=str, help="Test specific provider")
 
-    parser.add_argument(
-        "--all-providers",
-        action="store_true",
-        help="Test all available providers"
-    )
+    parser.add_argument("--all-providers", action="store_true", help="Test all available providers")
 
     # Test types
     parser.add_argument(
-        "--prompt-generation",
-        action="store_true",
-        help="Test prompt generation performance only"
+        "--prompt-generation", action="store_true", help="Test prompt generation performance only"
     )
 
     # Output options
-    parser.add_argument(
-        "--export-json",
-        type=str,
-        help="Export results to JSON file"
-    )
+    parser.add_argument("--export-json", type=str, help="Export results to JSON file")
 
     parser.add_argument(
-        "--import-json",
-        type=str,
-        help="Import results from JSON file for comparison"
+        "--import-json", type=str, help="Import results from JSON file for comparison"
     )
 
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Verbose output"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     parser.add_argument(
-        "--runs",
-        type=int,
-        default=3,
-        help="Number of runs per scenario (default: 3)"
+        "--runs", type=int, default=3, help="Number of runs per scenario (default: 3)"
     )
 
-    parser.add_argument(
-        "--no-table",
-        action="store_true",
-        help="Don't display results table"
-    )
+    parser.add_argument("--no-table", action="store_true", help="Don't display results table")
 
     # System info
-    parser.add_argument(
-        "--system-info",
-        action="store_true",
-        help="Show system information only"
-    )
+    parser.add_argument("--system-info", action="store_true", help="Show system information only")
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="peircean-bench 1.2.0"
-    )
+    parser.add_argument("--version", action="version", version="peircean-bench 1.2.0")
 
     return parser
 
@@ -211,6 +156,7 @@ def run_provider_tests(args: argparse.Namespace) -> int:
 
     if args.provider:
         from .providers import test_provider_availability
+
         provider_info = test_provider_availability(args.provider)
         providers = [provider_info]
     else:
@@ -218,6 +164,7 @@ def run_provider_tests(args: argparse.Namespace) -> int:
 
     # Display results
     from rich.table import Table
+
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Provider", style="cyan", width=15)
     table.add_column("Display Name", style="white", width=20)
@@ -230,13 +177,7 @@ def run_provider_tests(args: argparse.Namespace) -> int:
         configured = "✅ Yes" if provider_info.configured else "❌ No"
         error = provider_info.error_message or ""
 
-        table.add_row(
-            provider_info.name,
-            provider_info.display_name,
-            available,
-            configured,
-            error
-        )
+        table.add_row(provider_info.name, provider_info.display_name, available, configured, error)
 
     console.print(table)
 
@@ -245,10 +186,7 @@ def run_provider_tests(args: argparse.Namespace) -> int:
         console.print("\n[bold blue]Running Provider Benchmarks[/bold blue]")
 
         test_observation = "Stock price dropped 5% on good news"
-        results = benchmark_all_providers(
-            observation=test_observation,
-            num_runs=args.runs
-        )
+        results = benchmark_all_providers(observation=test_observation, num_runs=args.runs)
 
         for provider_name, result in results["providers"].items():
             if result["success"]:
@@ -262,12 +200,15 @@ def run_provider_tests(args: argparse.Namespace) -> int:
     return 0
 
 
-def run_prompt_generation_tests(scenarios: List[BenchmarkScenario], args: argparse.Namespace) -> int:
+def run_prompt_generation_tests(
+    scenarios: List[BenchmarkScenario], args: argparse.Namespace
+) -> int:
     """Run prompt generation performance tests."""
     console.print(Panel(f"[bold blue]Prompt Generation Benchmarks[/bold blue]"))
     console.print(f"Running {len(scenarios)} scenarios with {args.runs} runs each")
 
     from ..config import get_config
+
     config = get_config()
     provider_name = config.provider.value
 
@@ -288,7 +229,7 @@ def run_prompt_generation_tests(scenarios: List[BenchmarkScenario], args: argpar
                     domain=scenario.domain,
                     num_hypotheses=scenario.num_hypotheses,
                     context=scenario.context,
-                    use_council=scenario.use_council
+                    use_council=scenario.use_council,
                 )
 
                 scenario_results.append(result)
@@ -296,14 +237,14 @@ def run_prompt_generation_tests(scenarios: List[BenchmarkScenario], args: argpar
 
                 # Validate against expectations
                 validation = validate_scenario_expectations(
-                    result,
-                    scenario.expected_min_prompt_length,
-                    scenario.expected_max_time_seconds
+                    result, scenario.expected_min_prompt_length, scenario.expected_max_time_seconds
                 )
 
                 if args.verbose:
                     status = "✅" if result.success else "❌"
-                    console.print(f"{status} {scenario.name} (run {run + 1}): {result.generation_time_seconds:.3f}s")
+                    console.print(
+                        f"{status} {scenario.name} (run {run + 1}): {result.generation_time_seconds:.3f}s"
+                    )
 
                 progress.advance(task)
 
@@ -311,10 +252,13 @@ def run_prompt_generation_tests(scenarios: List[BenchmarkScenario], args: argpar
             if scenario_results:
                 summary = calculate_summary(scenario_results)
                 if args.verbose:
-                    console.print(f"  Summary: {summary.success_rate:.1%} success, {summary.avg_generation_time:.3f}s avg")
+                    console.print(
+                        f"  Summary: {summary.success_rate:.1%} success, {summary.avg_generation_time:.3f}s avg"
+                    )
 
     # Calculate overall summaries by scenario
     from collections import defaultdict
+
     results_by_scenario = defaultdict(list)
     for result in all_results:
         results_by_scenario[result.scenario_name].append(result)

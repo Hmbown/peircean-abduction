@@ -187,7 +187,7 @@ def validate_environment() -> dict[str, Any]:
     Returns:
         Dictionary with validation results
     """
-    results = {
+    results: dict[str, Any] = {
         "valid": True,
         "issues": [],
         "warnings": [],

@@ -220,7 +220,7 @@ def benchmark_all_providers(
     registry = get_provider_registry()
     providers = registry.get_available_providers()
 
-    results = {
+    results: Dict[str, Any] = {
         "observation": observation,
         "domain": domain,
         "num_hypotheses": num_hypotheses,
@@ -265,16 +265,17 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
     Returns:
         Dictionary with configuration analysis
     """
-    from ..utils.env import get_provider_info
-
+    from ..providers import get_provider_registry
+    
     try:
-        provider_info = get_provider_info(provider_name)
+        registry = get_provider_registry()
+        provider_info = registry.get_provider_info(provider_name)
         config = get_config()
 
         # Check environment variables
         env_vars = {}
-        if "api_key_env" in provider_info:
-            api_key_env = provider_info["api_key_env"]
+        if provider_info and provider_info.env_api_key:
+            api_key_env = provider_info.env_api_key
             env_vars["api_key_set"] = bool(config.api_key)
 
         # Check required configuration fields
@@ -312,7 +313,7 @@ def test_provider_configuration_completeness(provider_name: str) -> Dict[str, An
 class ProviderBenchmark:
     """High-level interface for provider benchmarking."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = get_config()
 
     def test_all_providers(self) -> List[ProviderInfo]:
@@ -337,7 +338,7 @@ class ProviderBenchmark:
 
     def run_comprehensive_benchmark(
         self,
-        test_observations: List[str] = None
+        test_observations: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Run comprehensive benchmark across all providers and scenarios."""
         if test_observations is None:
@@ -347,7 +348,7 @@ class ProviderBenchmark:
                 "Customer satisfaction improved while support tickets increased"
             ]
 
-        results = {
+        results: Dict[str, Any] = {
             "timestamp": time.time(),
             "provider_info": {},
             "benchmark_results": {}

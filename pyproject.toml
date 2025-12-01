@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "peircean-abduction"
-version = "1.2.1"
+version = "1.2.2"
 description = "A Logic Harness for abductive inference. Anomaly in → Hypothesis out."
 readme = "README.md"
 license = "MIT"
@@ -120,6 +120,10 @@ ignore_missing_imports = true
 module = ["tests.*", "examples.*"]
 disallow_untyped_defs = false
 check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["anthropic.*", "openai.*", "google.*", "ollama.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

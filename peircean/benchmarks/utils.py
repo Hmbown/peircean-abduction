@@ -30,7 +30,7 @@ class BenchmarkResult:
     generation_time_seconds: float
     success: bool
     error_message: Optional[str] = None
-    additional_metrics: Dict[str, Any] = None
+    additional_metrics: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.additional_metrics is None:
