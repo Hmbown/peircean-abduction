@@ -98,17 +98,11 @@ def format_validation_error(validation_error: ValidationError) -> str:
 
         # Generate field-specific hints
         if "observation" in loc:
-            field_hints.append(
-                "Provide a non-empty observation describing the surprising fact"
-            )
+            field_hints.append("Provide a non-empty observation describing the surprising fact")
         elif "anomaly_json" in loc:
-            field_hints.append(
-                "Pass the JSON output from peircean_observe_anomaly (Phase 1)"
-            )
+            field_hints.append("Pass the JSON output from peircean_observe_anomaly (Phase 1)")
         elif "hypotheses_json" in loc:
-            field_hints.append(
-                "Pass the JSON output from peircean_generate_hypotheses (Phase 2)"
-            )
+            field_hints.append("Pass the JSON output from peircean_generate_hypotheses (Phase 2)")
         elif "num_hypotheses" in loc:
             field_hints.append("Use a value between 1 and 20 for num_hypotheses")
         elif "domain" in loc:
@@ -125,16 +119,13 @@ def format_validation_error(validation_error: ValidationError) -> str:
         hint=" | ".join(unique_hints) if unique_hints else None,
         details={
             "validation_errors": [
-                {"field": ".".join(str(x) for x in e["loc"]), "message": e["msg"]}
-                for e in errors
+                {"field": ".".join(str(x) for x in e["loc"]), "message": e["msg"]} for e in errors
             ]
         },
     )
 
 
-def format_json_parse_error(
-    parameter_name: str, raw_value: str | None = None
-) -> str:
+def format_json_parse_error(parameter_name: str, raw_value: str | None = None) -> str:
     """
     Format a JSON parsing error with helpful context.
 

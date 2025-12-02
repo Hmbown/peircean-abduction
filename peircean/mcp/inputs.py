@@ -105,7 +105,7 @@ class GenerateHypothesesInput(BaseModel):
         description=(
             "The JSON output from peircean_observe_anomaly (Phase 1). "
             "Must contain an 'anomaly' object with at least 'fact' field. "
-            "Example: '{\"anomaly\": {\"fact\": \"Server latency spiked\", \"domain\": \"technical\"}}'"
+            'Example: \'{"anomaly": {"fact": "Server latency spiked", "domain": "technical"}}\''
         ),
         min_length=2,
         max_length=50000,
@@ -141,7 +141,7 @@ class EvaluateViaIBEInput(BaseModel):
         ...,
         description=(
             "The JSON output from peircean_observe_anomaly (Phase 1). "
-            "Example: '{\"anomaly\": {\"fact\": \"...\", \"surprise_level\": \"high\"}}'"
+            'Example: \'{"anomaly": {"fact": "...", "surprise_level": "high"}}\''
         ),
         min_length=2,
         max_length=50000,
@@ -150,7 +150,7 @@ class EvaluateViaIBEInput(BaseModel):
         ...,
         description=(
             "The JSON output from peircean_generate_hypotheses (Phase 2). "
-            "Example: '{\"hypotheses\": [{\"id\": \"H1\", \"statement\": \"...\"}]}'"
+            'Example: \'{"hypotheses": [{"id": "H1", "statement": "..."}]}\''
         ),
         min_length=2,
         max_length=100000,
