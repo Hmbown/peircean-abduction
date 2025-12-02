@@ -79,14 +79,16 @@ class TestQuestion3EmptyObservation:
         """Empty observation should return standardized error."""
         result = json.loads(peircean_observe_anomaly(observation="", domain="general"))
         assert result["type"] == "error"
-        assert "Empty observation" in result["error"]
+        # Now uses Pydantic validation with detailed error messages
+        assert "observation" in result["error"].lower()
         assert "hint" in result
 
     def test_whitespace_only_returns_error(self):
         """Whitespace-only observation should return standardized error."""
         result = json.loads(peircean_observe_anomaly(observation="   \t\n  ", domain="general"))
         assert result["type"] == "error"
-        assert "Empty observation" in result["error"]
+        # Whitespace-only is stripped and fails min_length=1 validation
+        assert "observation" in result["error"].lower()
 
 
 class TestQuestion4NumHypothesesBounds:
