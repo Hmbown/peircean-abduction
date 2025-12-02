@@ -9,7 +9,6 @@ and generate JSON Schema for tool descriptions.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -58,7 +57,7 @@ class ObserveAnomalyInput(BaseModel):
         min_length=1,
         max_length=5000,
     )
-    context: Optional[str] = Field(
+    context: str | None = Field(
         default=None,
         description=(
             "Additional background information. "
@@ -163,7 +162,7 @@ class EvaluateViaIBEInput(BaseModel):
             "Economist, Skeptic). Provides multi-perspective analysis but increases output."
         ),
     )
-    custom_council: Optional[list[str]] = Field(
+    custom_council: list[str] | None = Field(
         default=None,
         description=(
             "Custom list of specialist roles for the Council. "
@@ -199,7 +198,7 @@ class AbduceSingleShotInput(BaseModel):
         min_length=1,
         max_length=5000,
     )
-    context: Optional[str] = Field(
+    context: str | None = Field(
         default=None,
         description=(
             "Additional background information. "

@@ -29,14 +29,7 @@ from .errors import (
     format_validation_error,
 )
 from .fastmcp import FastMCP
-from .inputs import (
-    AbduceSingleShotInput,
-    CriticEvaluateInput,
-    Domain,
-    EvaluateViaIBEInput,
-    GenerateHypothesesInput,
-    ObserveAnomalyInput,
-)
+from .inputs import Domain, ObserveAnomalyInput
 from .types import ToolAnnotations
 
 # =============================================================================
@@ -651,6 +644,7 @@ def peircean_generate_hypotheses(
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
+    assert anomaly is not None  # Type narrowing for mypy
 
     fact = anomaly.get("fact", str(anomaly))
     surprise_level = anomaly.get("surprise_level", "surprising")
@@ -826,11 +820,13 @@ def peircean_evaluate_via_ibe(
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
+    assert anomaly is not None  # Type narrowing for mypy
 
     hypotheses, error = _parse_hypotheses_json(hypotheses_json)
     if error:
         logger.error("Invalid JSON in hypotheses_json parameter")
         return error
+    assert hypotheses is not None  # Type narrowing for mypy
 
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
@@ -1275,10 +1271,12 @@ def peircean_critic_evaluate(
     anomaly, error = _parse_anomaly_json(anomaly_json)
     if error:
         return error
+    assert anomaly is not None  # Type narrowing for mypy
 
     hypotheses, error = _parse_hypotheses_json(hypotheses_json)
     if error:
         return error
+    assert hypotheses is not None  # Type narrowing for mypy
 
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
