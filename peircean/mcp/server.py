@@ -29,7 +29,12 @@ from .errors import (
     format_validation_error,
 )
 from .fastmcp import FastMCP
-from .inputs import Domain, ObserveAnomalyInput
+from .inputs import (
+    Domain,
+    EvaluateViaIBEInput,
+    GenerateHypothesesInput,
+    ObserveAnomalyInput,
+)
 from .types import ToolAnnotations
 
 # =============================================================================
@@ -683,18 +688,17 @@ def peircean_generate_hypotheses(
     Next Step:
         Pass the hypotheses JSON output to peircean_evaluate_via_ibe() for Phase 3.
     """
-    logger.info(f"Phase 2: Generating {num_hypotheses} hypotheses")
-
-    # Validate num_hypotheses
-    if num_hypotheses < 1 or num_hypotheses > 20:
-        return format_error_response(
-            f"num_hypotheses must be between 1 and 20, got {num_hypotheses}",
-            code=ErrorCode.INVALID_VALUE,
-            hint="Use a value between 1 and 20 for num_hypotheses",
+    try:
+        validated_input = GenerateHypothesesInput(
+            anomaly_json=anomaly_json, num_hypotheses=num_hypotheses
         )
+    except ValidationError as e:
+        return format_validation_error(e)
+
+    logger.info(f"Phase 2: Generating {validated_input.num_hypotheses} hypotheses")
 
     # Parse the anomaly JSON
-    anomaly, error = _parse_anomaly_json(anomaly_json)
+    anomaly, error = _parse_anomaly_json(validated_input.anomaly_json)
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
@@ -865,18 +869,28 @@ def peircean_evaluate_via_ibe(
         Use when: You have generated hypotheses (Phase 2) and need to select the best one
         Don't use when: You haven't run Phase 1 and 2 yet
     """
+    try:
+        validated_input = EvaluateViaIBEInput(
+            anomaly_json=anomaly_json,
+            hypotheses_json=hypotheses_json,
+            use_council=use_council,
+            custom_council=custom_council,
+        )
+    except ValidationError as e:
+        return format_validation_error(e)
+
     logger.info(
-        f"Phase 3: Evaluating hypotheses via IBE (council={use_council}, custom={custom_council})"
+        f"Phase 3: Evaluating hypotheses via IBE (council={validated_input.use_council}, custom={validated_input.custom_council})"
     )
 
     # Parse inputs
-    anomaly, error = _parse_anomaly_json(anomaly_json)
+    anomaly, error = _parse_anomaly_json(validated_input.anomaly_json)
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
     assert anomaly is not None  # Type narrowing for mypy
 
-    hypotheses, error = _parse_hypotheses_json(hypotheses_json)
+    hypotheses, error = _parse_hypotheses_json(validated_input.hypotheses_json)
     if error:
         logger.error("Invalid JSON in hypotheses_json parameter")
         return error
