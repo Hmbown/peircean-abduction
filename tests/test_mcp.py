@@ -416,11 +416,33 @@ class TestHelperFunctions:
         assert result == response
 
     def test_truncate_response_over_limit(self):
-        """Test that responses over limit are truncated."""
-        response = "x" * 1000
-        result = _truncate_response(response, limit=100)
-        assert len(result) <= 200  # Some buffer for truncation message
-        assert "TRUNCATED" in result or "truncated" in result.lower()
+        """Test that large responses are truncated while keeping JSON valid."""
+        response = json.dumps({"items": ["x" * 200 for _ in range(30)]})
+        result = _truncate_response(response, limit=500)
+        parsed = json.loads(result)
+
+        assert "_truncation" in parsed
+        assert parsed["_truncation"]["truncated"] is True
+        assert parsed["_truncation"]["original_size"] == len(response)
+        assert len(result) <= 500
+        assert len(parsed["items"]) < 35  # list shortened with notice
+
+    def test_truncate_response_preserves_json_structure(self):
+        """Truncated outputs should remain valid JSON with metadata."""
+        payload = {
+            "records": [{"id": idx, "value": "v" * 100} for idx in range(10)],
+            "description": "".join(["longtext" for _ in range(200)]),
+        }
+        response = json.dumps(payload)
+
+        truncated = _truncate_response(response, limit=400)
+        parsed = json.loads(truncated)
+
+        assert parsed["_truncation"]["truncated"] is True
+        assert isinstance(parsed["records"], list)
+        assert len(parsed["records"]) <= 10
+        assert parsed["description"].startswith("longtext")
+        assert len(truncated) <= 400
 
     def test_character_limit_constant(self):
         """Test CHARACTER_LIMIT constant is defined."""
