@@ -378,26 +378,80 @@ def _truncate_response(response: str, limit: int = CHARACTER_LIMIT) -> str:
     if len(response) <= limit:
         return response
 
-    # Try to parse and truncate intelligently
-    try:
-        data = json.loads(response)
-        truncated_notice = {
-            "truncated": True,
-            "truncation_message": (
-                f"Response truncated from {len(response)} to ~{limit} characters. "
-                "Use pagination or add filters to see more results."
-            ),
-            "original_size": len(response),
-        }
-        # Merge notice into response
-        if isinstance(data, dict):
-            data["_truncation"] = truncated_notice
-            return json.dumps(data, indent=2)[:limit]
-    except json.JSONDecodeError:
-        pass
+    def _shrink_value(value: object, string_limit: int, list_limit: int) -> object:
+        if isinstance(value, str):
+            if len(value) > string_limit:
+                return value[:string_limit] + "... [truncated]"
+            return value
 
-    # Fallback: simple truncation
-    return response[:limit] + f"\n\n[TRUNCATED: Response exceeded {limit} characters]"
+        if isinstance(value, list):
+            shrunk_items = [_shrink_value(item, string_limit, list_limit) for item in value[:list_limit]]
+            if len(value) > list_limit:
+                shrunk_items.append(f"... {len(value) - list_limit} more items truncated ...")
+            return shrunk_items
+
+        if isinstance(value, dict):
+            return {key: _shrink_value(val, string_limit, list_limit) for key, val in value.items()}
+
+        return value
+
+    truncated_notice = {
+        "truncated": True,
+        "truncation_message": (
+            f"Response truncated from {len(response)} to ~{limit} characters. "
+            "Use pagination or add filters to see more results."
+        ),
+        "original_size": len(response),
+    }
+
+    try:
+        parsed = json.loads(response)
+    except json.JSONDecodeError:
+        preview_text = response[: max(0, limit // 2)]
+        payload = {"_truncation": truncated_notice, "content_preview": preview_text}
+        serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        if len(serialized) <= limit:
+            return serialized
+        adjusted_preview = preview_text[: max(0, len(preview_text) - (len(serialized) - limit))]
+        payload["content_preview"] = adjusted_preview
+        return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+    payload: dict
+    if isinstance(parsed, dict):
+        payload = parsed
+    else:
+        payload = {"data": parsed}
+
+    payload["_truncation"] = truncated_notice
+
+    string_limit = max(128, limit // 10)
+    list_limit = 50
+    min_string_limit = 32
+    min_list_limit = 1
+
+    for _ in range(8):
+        shrunk_payload = _shrink_value(payload, string_limit, list_limit)
+        serialized = json.dumps(shrunk_payload, ensure_ascii=False, separators=(",", ":"))
+        if len(serialized) <= limit:
+            return serialized
+        string_limit = max(min_string_limit, string_limit // 2)
+        list_limit = max(min_list_limit, list_limit // 2)
+
+    preview_payload = {
+        "_truncation": truncated_notice,
+        "content_preview": response[: max(0, limit // 3)],
+    }
+    while True:
+        serialized_preview = json.dumps(preview_payload, ensure_ascii=False, separators=(",", ":"))
+        if len(serialized_preview) <= limit:
+            return serialized_preview
+        current_preview = preview_payload["content_preview"]
+        if not current_preview:
+            minimal_payload = json.dumps({"_truncation": truncated_notice}, ensure_ascii=False, separators=(",", ":"))
+            if len(minimal_payload) <= limit:
+                return minimal_payload
+            return "{}"
+        preview_payload["content_preview"] = current_preview[:-max(1, len(serialized_preview) - limit)]
 
 
 # =============================================================================
