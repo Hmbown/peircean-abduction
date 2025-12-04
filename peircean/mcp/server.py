@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -390,7 +391,9 @@ def _truncate_response(response: str, limit: int = CHARACTER_LIMIT) -> str:
             return value
 
         if isinstance(value, list):
-            shrunk_items = [_shrink_value(item, string_limit, list_limit) for item in value[:list_limit]]
+            shrunk_items = [
+                _shrink_value(item, string_limit, list_limit) for item in value[:list_limit]
+            ]
             if len(value) > list_limit:
                 shrunk_items.append(f"... {len(value) - list_limit} more items truncated ...")
             return shrunk_items
@@ -413,13 +416,13 @@ def _truncate_response(response: str, limit: int = CHARACTER_LIMIT) -> str:
         parsed = json.loads(response)
     except json.JSONDecodeError:
         preview_text = response[: max(0, limit // 2)]
-        payload = {"_truncation": truncated_notice, "content_preview": preview_text}
-        serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        error_payload = {"_truncation": truncated_notice, "content_preview": preview_text}
+        serialized = json.dumps(error_payload, ensure_ascii=False, separators=(",", ":"))
         if len(serialized) <= limit:
             return serialized
         adjusted_preview = preview_text[: max(0, len(preview_text) - (len(serialized) - limit))]
-        payload["content_preview"] = adjusted_preview
-        return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        error_payload["content_preview"] = adjusted_preview
+        return json.dumps(error_payload, ensure_ascii=False, separators=(",", ":"))
 
     payload: dict
     if isinstance(parsed, dict):
@@ -442,7 +445,7 @@ def _truncate_response(response: str, limit: int = CHARACTER_LIMIT) -> str:
         string_limit = max(min_string_limit, string_limit // 2)
         list_limit = max(min_list_limit, list_limit // 2)
 
-    preview_payload = {
+    preview_payload: dict[str, Any] = {
         "_truncation": truncated_notice,
         "content_preview": response[: max(0, limit // 3)],
     }
@@ -450,13 +453,17 @@ def _truncate_response(response: str, limit: int = CHARACTER_LIMIT) -> str:
         serialized_preview = json.dumps(preview_payload, ensure_ascii=False, separators=(",", ":"))
         if len(serialized_preview) <= limit:
             return serialized_preview
-        current_preview = preview_payload["content_preview"]
+        current_preview = str(preview_payload["content_preview"])
         if not current_preview:
-            minimal_payload = json.dumps({"_truncation": truncated_notice}, ensure_ascii=False, separators=(",", ":"))
+            minimal_payload = json.dumps(
+                {"_truncation": truncated_notice}, ensure_ascii=False, separators=(",", ":")
+            )
             if len(minimal_payload) <= limit:
                 return minimal_payload
             return "{}"
-        preview_payload["content_preview"] = current_preview[:-max(1, len(serialized_preview) - limit)]
+        preview_payload["content_preview"] = current_preview[
+            : -max(1, len(serialized_preview) - limit)
+        ]
 
 
 # =============================================================================
