@@ -104,7 +104,7 @@ class TestMCPServer:
 
         assert result["type"] == "error"
         assert result["code"] == ErrorCode.INVALID_JSON.value
-        assert "hypotheses_json" in result.get("error", "")
+        assert result["details"]["parameter"] == "hypotheses_json"
 
     def test_evaluate_via_ibe_returns_prompt(self):
         anomaly_json = json.dumps({"anomaly": {"fact": "Test observation"}})
