@@ -92,6 +92,19 @@ class TestMCPServer:
         assert result["type"] == "error"
         assert "error" in result
         assert "hint" in result
+        assert result["code"] == ErrorCode.INVALID_JSON.value
+
+    def test_evaluate_via_ibe_invalid_hypotheses_json_returns_error(self):
+        anomaly_json = json.dumps({"anomaly": {"fact": "Test observation"}})
+
+        result_json = peircean_evaluate_via_ibe(
+            anomaly_json=anomaly_json, hypotheses_json="malformed"
+        )
+        result = json.loads(result_json)
+
+        assert result["type"] == "error"
+        assert result["code"] == ErrorCode.INVALID_JSON.value
+        assert "hypotheses_json" in result.get("error", "")
 
     def test_evaluate_via_ibe_returns_prompt(self):
         anomaly_json = json.dumps({"anomaly": {"fact": "Test observation"}})
@@ -177,8 +190,9 @@ class TestMCPServer:
         result = json.loads(result_json)
 
         assert result["type"] == "error"
+        assert result["code"] == ErrorCode.VALIDATION_ERROR.value
         assert "num_hypotheses" in result["error"]
-        assert "between 1 and 20" in result["error"]
+        assert "between 1 and 20" in result.get("hint", "")
 
     def test_generate_hypotheses_num_too_high_returns_error(self):
         anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
@@ -186,8 +200,9 @@ class TestMCPServer:
         result = json.loads(result_json)
 
         assert result["type"] == "error"
+        assert result["code"] == ErrorCode.VALIDATION_ERROR.value
         assert "num_hypotheses" in result["error"]
-        assert "between 1 and 20" in result["error"]
+        assert "between 1 and 20" in result.get("hint", "")
 
     def test_abduce_single_shot_empty_observation_returns_error(self):
         result_json = peircean_abduce_single_shot(observation="")
