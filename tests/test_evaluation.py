@@ -101,7 +101,7 @@ class TestQuestion4NumHypothesesBounds:
             peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=0)
         )
         assert result["type"] == "error"
-        assert "between 1 and 20" in result["error"]
+        assert "greater than or equal to 1" in result["error"]
 
     def test_negative_hypotheses_returns_error(self):
         """num_hypotheses=-5 should return error."""
@@ -118,7 +118,7 @@ class TestQuestion4NumHypothesesBounds:
             peircean_generate_hypotheses(anomaly_json=anomaly_json, num_hypotheses=25)
         )
         assert result["type"] == "error"
-        assert "between 1 and 20" in result["error"]
+        assert "less than or equal to 20" in result["error"]
 
     def test_valid_hypotheses_count_succeeds(self):
         """num_hypotheses=5 should succeed."""

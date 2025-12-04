@@ -23,13 +23,13 @@ import sys
 from pydantic import ValidationError
 
 from .errors import (
-    ErrorCode,
-    format_error_response,
     format_json_parse_error,
     format_validation_error,
 )
 from .fastmcp import FastMCP
 from .inputs import (
+    AbduceSingleShotInput,
+    CriticEvaluateInput,
     Domain,
     EvaluateViaIBEInput,
     GenerateHypothesesInput,
@@ -490,7 +490,7 @@ def peircean_observe_anomaly(
 
     Args:
         observation: The surprising/anomalous fact observed.
-            Examples:
+            Example:
             - "Server latency spiked 10x but CPU/memory normal"
             - "Customer churn doubled but NPS scores unchanged"
             - "Stock dropped 5% after positive earnings report"
@@ -688,17 +688,19 @@ def peircean_generate_hypotheses(
     Next Step:
         Pass the hypotheses JSON output to peircean_evaluate_via_ibe() for Phase 3.
     """
+    logger.info(f"Phase 2: Generating {num_hypotheses} hypotheses")
+
+    # Validate input using Pydantic model
     try:
-        validated_input = GenerateHypothesesInput(
-            anomaly_json=anomaly_json, num_hypotheses=num_hypotheses
+        params = GenerateHypothesesInput(
+            anomaly_json=anomaly_json,
+            num_hypotheses=num_hypotheses,
         )
     except ValidationError as e:
         return format_validation_error(e)
 
-    logger.info(f"Phase 2: Generating {validated_input.num_hypotheses} hypotheses")
-
     # Parse the anomaly JSON
-    anomaly, error = _parse_anomaly_json(validated_input.anomaly_json)
+    anomaly, error = _parse_anomaly_json(params.anomaly_json)
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
@@ -720,7 +722,7 @@ def peircean_generate_hypotheses(
 
     prompt = f"""{SYSTEM_DIRECTIVE}
 
-TASK: Generate {num_hypotheses} explanatory hypotheses through ABDUCTION.
+TASK: Generate {params.num_hypotheses} explanatory hypotheses through ABDUCTION.
 
 ## The Surprising Fact (C)
 {fact}
@@ -775,7 +777,7 @@ Respond with ONLY this JSON structure:
 }}
 ```
 
-Generate exactly {num_hypotheses} hypotheses.
+Generate exactly {params.num_hypotheses} hypotheses.
 """
 
     response = json.dumps(
@@ -883,14 +885,25 @@ def peircean_evaluate_via_ibe(
         f"Phase 3: Evaluating hypotheses via IBE (council={validated_input.use_council}, custom={validated_input.custom_council})"
     )
 
+    # Validate input using Pydantic model
+    try:
+        params = EvaluateViaIBEInput(
+            anomaly_json=anomaly_json,
+            hypotheses_json=hypotheses_json,
+            use_council=use_council,
+            custom_council=custom_council,
+        )
+    except ValidationError as e:
+        return format_validation_error(e)
+
     # Parse inputs
-    anomaly, error = _parse_anomaly_json(validated_input.anomaly_json)
+    anomaly, error = _parse_anomaly_json(params.anomaly_json)
     if error:
         logger.error("Invalid JSON in anomaly_json parameter")
         return error
     assert anomaly is not None  # Type narrowing for mypy
 
-    hypotheses, error = _parse_hypotheses_json(validated_input.hypotheses_json)
+    hypotheses, error = _parse_hypotheses_json(params.hypotheses_json)
     if error:
         logger.error("Invalid JSON in hypotheses_json parameter")
         return error
@@ -903,11 +916,11 @@ def peircean_evaluate_via_ibe(
     scoring_criteria = ""
     score_keys = []
 
-    if custom_council:
+    if params.custom_council:
         council_section = "## Council of Critics Evaluation\n\nEvaluate each hypothesis from the perspectives of these nominated specialists:\n\n"
         scoring_criteria = "## Council Scoring Criteria\n\nScore each hypothesis (0.0-1.0) based on the Specialist's perspective:\n\n"
 
-        for role in custom_council:
+        for role in params.custom_council:
             slug = role.lower().replace(" ", "_")
             score_keys.append(slug)
 
@@ -925,7 +938,7 @@ def peircean_evaluate_via_ibe(
             scoring_criteria += "   - 1.0: Strongly endorsed by this domain expertise.\n"
             scoring_criteria += "   - 0.0: Rejected by this domain expertise.\n\n"
 
-    elif use_council:
+    elif params.use_council:
         score_keys = ["empiricist", "logician", "pragmatist", "economist", "skeptic"]
         council_section = """
 ## Council of Critics Evaluation
@@ -1090,7 +1103,7 @@ def peircean_abduce_single_shot(
 
     Args:
         observation: The surprising/anomalous fact to explain.
-            Examples:
+            Example:
             - "Customer churn rate doubled in Q3"
             - "API latency spiked with no deployment"
             - "Revenue dropped despite increased traffic"
@@ -1149,41 +1162,31 @@ def peircean_abduce_single_shot(
     """
     logger.info(f"Single-shot abduction in domain '{domain}'")
 
-    # Validate observation
-    if not observation or not observation.strip():
-        return format_error_response(
-            "Empty observation provided",
-            code=ErrorCode.VALIDATION_ERROR,
-            hint="Provide a non-empty observation describing the surprising fact",
-        )
-
-    # Validate num_hypotheses
-    if num_hypotheses < 1 or num_hypotheses > 20:
-        return format_error_response(
-            f"num_hypotheses must be between 1 and 20, got {num_hypotheses}",
-            code=ErrorCode.INVALID_VALUE,
-            hint="Use a value between 1 and 20 for num_hypotheses",
-        )
-
+    # Validate input using Pydantic model
     try:
-        domain_enum = Domain(domain)
-    except ValueError:
-        domain_enum = Domain.GENERAL
+        params = AbduceSingleShotInput(
+            observation=observation,
+            context=context,
+            domain=Domain(domain) if domain in [d.value for d in Domain] else Domain.GENERAL,
+            num_hypotheses=num_hypotheses,
+        )
+    except ValidationError as e:
+        return format_validation_error(e)
 
-    domain_guidance = DOMAIN_GUIDANCE.get(domain_enum, DOMAIN_GUIDANCE[Domain.GENERAL])
+    domain_guidance = DOMAIN_GUIDANCE.get(params.domain, DOMAIN_GUIDANCE[Domain.GENERAL])
 
     prompt = f"""{SYSTEM_DIRECTIVE}
 
 TASK: Perform COMPLETE abductive reasoning on this observation.
 
 ## The Observation
-{observation}
+{params.observation}
 
 ## Context
-{context or "No additional context provided."}
+{params.context or "No additional context provided."}
 
 ## Domain
-{domain}
+{params.domain}
 
 {domain_guidance}
 
@@ -1200,7 +1203,7 @@ TASK: Perform COMPLETE abductive reasoning on this observation.
 - What would have been expected?
 - How surprising is it? (0.0-1.0)
 
-### Phase 2: Generate {num_hypotheses} Hypotheses
+### Phase 2: Generate {params.num_hypotheses} Hypotheses
 For each hypothesis:
 - Clear, falsifiable statement
 - How it explains the observation
@@ -1323,25 +1326,30 @@ def peircean_critic_evaluate(
             "concerns": ["concern 1"]
         }
 
-    Examples:
+    Example:
         Use when: You want a specific perspective on the hypotheses
         Use when: You need domain expertise not covered by standard council
         Don't use when: You want all perspectives at once (use use_council=True in Phase 3)
     """
-    # Validate critic - fallback to general_critic if empty
-    if not critic or not critic.strip():
-        logger.warning("Empty critic provided, falling back to 'general_critic'")
-        critic = "general_critic"
+    # Validate input using Pydantic model
+    try:
+        params = CriticEvaluateInput(
+            critic=critic,
+            anomaly_json=anomaly_json,
+            hypotheses_json=hypotheses_json,
+        )
+    except ValidationError as e:
+        return format_validation_error(e)
 
-    logger.info(f"Council: Consulting the {critic}")
+    logger.info(f"Council: Consulting the {params.critic}")
 
     # Parse inputs
-    anomaly, error = _parse_anomaly_json(anomaly_json)
+    anomaly, error = _parse_anomaly_json(params.anomaly_json)
     if error:
         return error
     assert anomaly is not None  # Type narrowing for mypy
 
-    hypotheses, error = _parse_hypotheses_json(hypotheses_json)
+    hypotheses, error = _parse_hypotheses_json(params.hypotheses_json)
     if error:
         return error
     assert hypotheses is not None  # Type narrowing for mypy
@@ -1349,9 +1357,9 @@ def peircean_critic_evaluate(
     fact = anomaly.get("fact", str(anomaly))
     hypotheses_formatted = json.dumps(hypotheses, indent=2)
 
-    prompt = f"""You are THE {critic.upper()} on the Council of Critics.
+    prompt = f"""You are THE {params.critic.upper()} on the Council of Critics.
 
-Your role: Evaluate hypotheses based on the specific expertise, concerns, and methodology of a {critic}.
+Your role: Evaluate hypotheses based on the specific expertise, concerns, and methodology of a {params.critic}.
 
 ## The Surprising Fact
 {fact}

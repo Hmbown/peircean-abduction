@@ -192,7 +192,7 @@ class TestMCPServer:
         assert result["type"] == "error"
         assert result["code"] == ErrorCode.VALIDATION_ERROR.value
         assert "num_hypotheses" in result["error"]
-        assert "between 1 and 20" in result.get("hint", "")
+        assert "greater than or equal to 1" in result["error"]
 
     def test_generate_hypotheses_num_too_high_returns_error(self):
         anomaly_json = json.dumps({"anomaly": {"fact": "Test"}})
@@ -202,14 +202,14 @@ class TestMCPServer:
         assert result["type"] == "error"
         assert result["code"] == ErrorCode.VALIDATION_ERROR.value
         assert "num_hypotheses" in result["error"]
-        assert "between 1 and 20" in result.get("hint", "")
+        assert "less than or equal to 20" in result["error"]
 
     def test_abduce_single_shot_empty_observation_returns_error(self):
         result_json = peircean_abduce_single_shot(observation="")
         result = json.loads(result_json)
 
         assert result["type"] == "error"
-        assert "Empty observation" in result["error"]
+        assert "observation" in result["error"]
 
     def test_abduce_single_shot_num_too_high_returns_error(self):
         result_json = peircean_abduce_single_shot(observation="Test", num_hypotheses=100)
@@ -393,6 +393,7 @@ class TestHelperFunctions:
         anomaly_json = '{"anomaly": {"fact": "Test", "domain": "technical"}}'
         anomaly, error = _parse_anomaly_json(anomaly_json)
         assert error is None
+        assert anomaly is not None
         assert anomaly["fact"] == "Test"
         assert anomaly["domain"] == "technical"
 
@@ -401,6 +402,7 @@ class TestHelperFunctions:
         anomaly_json = '{"fact": "Test", "domain": "technical"}'
         anomaly, error = _parse_anomaly_json(anomaly_json)
         assert error is None
+        assert anomaly is not None
         assert anomaly["fact"] == "Test"
 
     def test_parse_anomaly_json_invalid(self):
@@ -415,6 +417,7 @@ class TestHelperFunctions:
         hypotheses_json = '{"hypotheses": [{"id": "H1", "statement": "Test"}]}'
         hypotheses, error = _parse_hypotheses_json(hypotheses_json)
         assert error is None
+        assert hypotheses is not None
         assert len(hypotheses) == 1
         assert hypotheses[0]["id"] == "H1"
 

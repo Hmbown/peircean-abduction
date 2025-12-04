@@ -253,7 +253,7 @@ class CriticEvaluateInput(BaseModel):
             "Built-in options: empiricist, logician, pragmatist, economist, skeptic. "
             "Custom roles also supported: 'forensic_accountant', 'security_engineer', etc."
         ),
-        min_length=1,
+        min_length=0,
         max_length=100,
     )
     anomaly_json: str = Field(
